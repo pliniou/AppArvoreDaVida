@@ -113,7 +113,7 @@ fun VisualizadorScreen(
                     },
                     update = { view ->
                         // Navegar para a página quando currentPage muda no Compose
-                        view.goToPage(currentPage)
+                        view.jumpTo(currentPage)
                     },
                     modifier = Modifier
                         .fillMaxSize()

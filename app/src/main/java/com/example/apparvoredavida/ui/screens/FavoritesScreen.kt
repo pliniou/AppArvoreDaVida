@@ -33,12 +33,10 @@ fun FavoritesScreen(navController: NavController) {
         when (item) {
             is FavoriteDisplayItem.MusicItem -> { navController.navigate("${Constants.ROUTE_PLAYER}/${item.id}") }
             is FavoriteDisplayItem.VerseItem -> {
-                // Construir a rota manualmente
-                val traducaoAbrev = item.verseObject.translation?.abbreviation ?: "NVI" // Assumindo propriedade 'translation' com 'abbreviation', default para NVI
-                val livroAbrev = item.verseObject.book.abbreviation // Assumindo propriedade 'book' com 'abbreviation'
-                val capituloNumero = item.verseObject.chapter
-                val versiculoNumero = item.verseObject.verseNumber
-                navController.navigate("biblia_screen/${traducaoAbrev}/${livroAbrev}/${capituloNumero}/${versiculoNumero}")
+                val verseDetails = item.details
+                navController.navigate(
+                    "biblia_screen/${verseDetails.traducaoAbrev}/${verseDetails.livroAbrev}/${verseDetails.capituloNumero}/${verseDetails.versiculoNumero}"
+                )
             }
             is FavoriteDisplayItem.HymnItem -> { navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf") }
             is FavoriteDisplayItem.ScoreItem -> { navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf") }

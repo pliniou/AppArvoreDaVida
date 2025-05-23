@@ -20,7 +20,7 @@ import java.io.IOException
 import android.os.Build
 import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.runtime.collectAsState
 import com.example.apparvoredavida.util.TamanhoFonte
 import com.example.apparvoredavida.model.TemaApp
 
@@ -94,7 +94,8 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val preferencias by viewModel.preferencias.collectAsStateWithLifecycle()
+    val preferenciasState = viewModel.preferencias.collectAsState()
+    val preferencias = preferenciasState.value
     val systemDarkTheme = isSystemInDarkTheme()
 
     val darkTheme = remember(preferencias.tema, systemDarkTheme) {

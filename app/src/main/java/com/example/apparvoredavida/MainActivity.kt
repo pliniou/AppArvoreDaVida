@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.apparvoredavida.ui.navigation.AppNavigation
-import com.example.apparvoredavida.ui.theme.AppTheme
+import com.example.apparvoredavida.ui.theme.AppArvoreDaVidaTheme
 import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -42,12 +42,7 @@ class MainActivity : ComponentActivity() {
                 com.example.apparvoredavida.model.TemaApp.SISTEMA -> isSystemInDarkTheme()
             }
 
-            AppTheme(
-                darkTheme = useDarkTheme,
-                temaApp = preferenciasState.tema,
-                fontePreferida = preferenciasState.fonte,
-                tamanhoFontePreferido = preferenciasState.tamanhoFonte
-            ) {
+            AppArvoreDaVidaTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
