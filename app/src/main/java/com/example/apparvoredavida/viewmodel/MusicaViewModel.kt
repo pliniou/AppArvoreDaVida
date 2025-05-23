@@ -25,6 +25,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.update
 import androidx.media3.common.Player
+import androidx.media3.common.MediaItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 

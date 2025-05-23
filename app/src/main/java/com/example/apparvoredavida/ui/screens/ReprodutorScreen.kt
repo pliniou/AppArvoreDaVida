@@ -65,11 +65,9 @@ fun ReprodutorScreen(
     viewModel: MusicaViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val albuns by viewModel.albuns.collectAsStateWithLifecycle()
-    // Busca a música pelo path
-    val musica: Music? = remember(albuns, musicaPath) {
-        albuns.flatMap { it.songs }.find { it.path == musicaPath }
-    }
+    
+    // Obter a música selecionada diretamente do ViewModel
+    val musica by viewModel.musicaSelecionada.collectAsStateWithLifecycle()
 
     // --- Observar estados do ViewModel ---
     val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
@@ -77,8 +75,8 @@ fun ReprodutorScreen(
     val duration by viewModel.duration.collectAsStateWithLifecycle()
     // ------------------------------------
 
-    // Carregar música no player quando o caminho mudar
-    LaunchedEffect(musicaPath) {
+    // Carregar música no player quando a música selecionada mudar no ViewModel
+    LaunchedEffect(musica) {
         musica?.let {
             viewModel.playMusic(it)
         }

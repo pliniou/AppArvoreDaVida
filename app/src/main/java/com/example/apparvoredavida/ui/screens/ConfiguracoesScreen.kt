@@ -20,9 +20,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.item
 import java.io.File
-import com.example.apparvoredavida.viewmodel.ConfiguracoesViewModel
-import com.example.apparvoredavida.viewmodel.TemaApp
-import com.example.apparvoredavida.viewmodel.TamanhoFonte
+import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
+import com.example.apparvoredavida.model.TemaApp
+import com.example.apparvoredavida.util.TamanhoFonte
 import com.example.apparvoredavida.ui.components.AppTopBar
 import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.util.Constants
@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 @Composable
 fun ConfiguracoesScreen(navController: NavController) {
     val context = LocalContext.current
-    val viewModel: ConfiguracoesViewModel = hiltViewModel()
+    val viewModel: PreferenciasViewModel = hiltViewModel()
     
     val preferencias by viewModel.preferencias.collectAsStateWithLifecycle()
     val fontesDisponiveis by viewModel.fontesDisponiveis.collectAsStateWithLifecycle()
@@ -66,7 +66,7 @@ fun ConfiguracoesScreen(navController: NavController) {
                                     when (tema) {
                                         TemaApp.CLARO -> "Claro"
                                         TemaApp.ESCURO -> "Escuro"
-                                        TemaApp.DINAMICO -> "Dinâmico"
+                                        TemaApp.SISTEMA -> "Sistema"
                                     }
                                 )
                             }

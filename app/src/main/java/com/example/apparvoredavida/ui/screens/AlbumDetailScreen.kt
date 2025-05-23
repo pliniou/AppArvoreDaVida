@@ -1,10 +1,13 @@
 package com.example.apparvoredavida.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,8 +49,11 @@ fun AlbumDetailScreen(
             TopAppBar(
                 title = { Text(albumData?.title ?: "Detalhes do Álbum") }, // Usar albumData para o título
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack)
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
                     }
                 }
             )
@@ -80,7 +86,7 @@ fun AlbumDetailScreen(
 
                 // Manter a lista de músicas
                 items(musicList) { musica -> // Usar musicList
-                    val isFavorite = favoritesViewModel.isFavorite(musica.id).collectAsState(initial = false).value
+                    val isFavorite by favoritesViewModel.isMusicFavoriteFlow(musica.id).collectAsState(initial = false)
                     MusicListItem(
                         music = musica,
                         isFavorite = isFavorite,

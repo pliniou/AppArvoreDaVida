@@ -45,7 +45,7 @@ import com.example.apparvoredavida.model.TipoFavorito
 import com.example.apparvoredavida.ui.screens.ReprodutorScreen
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.PaddingValues
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.items
 import com.example.apparvoredavida.ui.navigation.Screen
 import com.example.apparvoredavida.model.Favorite.Type
@@ -119,10 +119,10 @@ fun MusicasScreen(navController: NavController = rememberNavController()) {
                                     navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
                                 },
                                 onFavoriteClick = { musica ->
-                                    favoritosViewModel.toggleFavorite(musica.id, Type.MUSIC)
+                                    favoritosViewModel.toggleFavorite(musica)
                                 },
                                 isFavorite = { musica ->
-                                    favoritosViewModel.isFavorite(musica.id, Type.MUSIC).collectAsState(initial = false).value
+                                    favoritosViewModel.isFavorite(musica).collectAsState(initial = false).value
                                 },
                                 musics = if (albumExpandido == album.id) {
                                     musicaViewModel.getAlbumById(album.id).collectAsStateWithLifecycle().value.second

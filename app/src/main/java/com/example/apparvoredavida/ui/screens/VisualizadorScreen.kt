@@ -81,14 +81,15 @@ fun VisualizadorScreen(
 
         when (fileType) {
             "pdf" -> {
-                val pdfFile = AssetManager.getPdfFile(context, filePath)
+                // Construir o URI para o asset
+                val pdfUri = "file:///android_asset/" + filePath
 
                 AndroidView(
                     factory = {
                         PdfRendererView(it).apply {
                             pdfRendererView = this
-                            // Configurar a PdfRendererView
-                            initWithFile(pdfFile, quality = Quality.NORMAL)
+                            // Configurar a PdfRendererView com o URI do asset
+                            initWithUrl(pdfUri, quality = Quality.NORMAL)
 
                             // Configurar o StatusCallBack
                             statusListener = object : PdfRendererView.StatusCallBack {
@@ -111,14 +112,8 @@ fun VisualizadorScreen(
                         }
                     },
                     update = { view ->
-                        // Lógica para navegar na PdfRendererView quando currentPage muda no Compose
-                        // TODO: Substituir pelo método real de navegação da biblioteca (ex: view.goToPage(currentPage))
-                        // Substitua o TODO abaixo pelo método correto da sua biblioteca de PDF
-                        // view.SEU_METODO_DE_NAVEGACAO(currentPage)
-
-                        // Placeholder: Chame a função de navegação real da sua PdfRendererView aqui
-                        // Exemplo (substitua 'goToPage' pelo método correto):
-                         pdfRendererView?.setPage(currentPage)
+                        // Navegar para a página quando currentPage muda no Compose
+                        view.goToPage(currentPage)
                     },
                     modifier = Modifier
                         .fillMaxSize()

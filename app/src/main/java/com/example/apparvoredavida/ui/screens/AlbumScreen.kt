@@ -21,7 +21,6 @@ import com.example.apparvoredavida.viewmodel.MusicaViewModel
 import com.example.apparvoredavida.viewmodel.FavoritesViewModel
 import com.example.apparvoredavida.util.Constants
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.apparvoredavida.model.Favorite.Type
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +59,7 @@ fun AlbumScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(musicList) { musica ->
-                    val isFavorite by favoritosViewModel.isFavorite(musica.id, Type.MUSIC).collectAsState(initial = false)
+                    val isFavorite by favoritosViewModel.isMusicFavoriteFlow(musica.id).collectAsState(initial = false)
                     MusicItem(
                         musica = musica,
                         isFavorite = isFavorite,
@@ -69,7 +68,7 @@ fun AlbumScreen(
                             navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
                         },
                         onFavoriteClick = { selectedMusic ->
-                            favoritosViewModel.toggleFavorite(selectedMusic.id, Type.MUSIC)
+                            favoritosViewModel.toggleFavoriteMusic(selectedMusic)
                         }
                     )
                 }

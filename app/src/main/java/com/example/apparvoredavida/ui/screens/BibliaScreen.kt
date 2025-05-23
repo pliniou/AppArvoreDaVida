@@ -17,7 +17,7 @@ import com.example.apparvoredavida.ui.components.AppTopBar
 import com.example.apparvoredavida.ui.components.AppCard
 import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.viewmodel.BibliaViewModel
-import com.example.apparvoredavida.viewmodel.TemaApp
+import com.example.apparvoredavida.model.TemaApp
 import com.example.apparvoredavida.model.BibleTranslation
 import com.example.apparvoredavida.model.Livro
 import com.example.apparvoredavida.model.Capitulo
@@ -37,7 +37,7 @@ fun BibleScreen(
     val viewModel: BibliaViewModel = hiltViewModel()
     
     // Observando os StateFlows do ViewModel
-    val traducoesDisponiveis by viewModel.traducoesDisponiveis.collectAsState()
+    val traducoesDisponiveis = viewModel.traducoesDisponiveis
     val traducaoSelecionada by viewModel.traducaoSelecionada.collectAsState()
     val nomesLivrosDisponiveis by viewModel.nomesLivrosDisponiveis.collectAsState()
     val livroCarregado by viewModel.livroCarregado.collectAsState()
