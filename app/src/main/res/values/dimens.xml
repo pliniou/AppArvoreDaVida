@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Margens -->
+    <dimen name="margin_small">4dp</dimen>
+    <dimen name="margin_medium">8dp</dimen>
+    <dimen name="margin_large">16dp</dimen>
+    <dimen name="margin_xlarge">24dp</dimen>
+    <dimen name="margin_xxlarge">32dp</dimen>
+
+    <!-- Padding -->
+    <dimen name="padding_small">4dp</dimen>
+    <dimen name="padding_medium">8dp</dimen>
+    <dimen name="padding_large">16dp</dimen>
+    <dimen name="padding_xlarge">24dp</dimen>
+    <dimen name="padding_xxlarge">32dp</dimen>
+
+    <!-- Textos -->
+    <dimen name="text_small">12sp</dimen>
+    <dimen name="text_medium">14sp</dimen>
+    <dimen name="text_large">16sp</dimen>
+    <dimen name="text_xlarge">20sp</dimen>
+    <dimen name="text_xxlarge">24sp</dimen>
+    <dimen name="text_xxxlarge">32sp</dimen>
+
+    <!-- Ícones -->
+    <dimen name="icon_small">16dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="icon_large">32dp</dimen>
+    <dimen name="icon_xlarge">48dp</dimen>
+    <dimen name="icon_xxlarge">64dp</dimen>
+
+    <!-- Botões -->
+    <dimen name="button_height">48dp</dimen>
+    <dimen name="button_min_width">88dp</dimen>
+    <dimen name="button_padding">16dp</dimen>
+    <dimen name="button_corner_radius">24dp</dimen>
+
+    <!-- Cards -->
+    <dimen name="card_corner_radius">8dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+
+    <!-- Inputs -->
+    <dimen name="input_height">48dp</dimen>
+    <dimen name="input_padding">16dp</dimen>
+    <dimen name="input_corner_radius">24dp</dimen>
+
+    <!-- Dividers -->
+    <dimen name="divider_height">1dp</dimen>
+    <dimen name="divider_padding">16dp</dimen>
+
+    <!-- Toolbars -->
+    <dimen name="toolbar_height">56dp</dimen>
+    <dimen name="toolbar_padding">16dp</dimen>
+
+    <!-- Navigation -->
+    <dimen name="navigation_height">56dp</dimen>
+    <dimen name="navigation_padding">8dp</dimen>
+
+    <!-- FAB -->
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_size">56dp</dimen>
+
+    <!-- Snackbar -->
+    <dimen name="snackbar_margin">16dp</dimen>
+    <dimen name="snackbar_padding">16dp</dimen>
+
+    <!-- Dialog -->
+    <dimen name="dialog_margin">16dp</dimen>
+    <dimen name="dialog_padding">24dp</dimen>
+    <dimen name="dialog_corner_radius">8dp</dimen>
+
+    <!-- Bottom Sheet -->
+    <dimen name="bottom_sheet_margin">16dp</dimen>
+    <dimen name="bottom_sheet_padding">24dp</dimen>
+    <dimen name="bottom_sheet_corner_radius">16dp</dimen>
+
+    <!-- Player -->
+    <dimen name="player_height">72dp</dimen>
+    <dimen name="player_padding">16dp</dimen>
+    <dimen name="player_controls_size">48dp</dimen>
+    <dimen name="player_progress_height">4dp</dimen>
+
+    <!-- Album -->
+    <dimen name="album_cover_size">200dp</dimen>
+    <dimen name="album_cover_corner_radius">8dp</dimen>
+    <dimen name="album_info_padding">16dp</dimen>
+
+    <!-- Music Item -->
+    <dimen name="music_item_height">72dp</dimen>
+    <dimen name="music_item_padding">16dp</dimen>
+    <dimen name="music_item_cover_size">56dp</dimen>
+    <dimen name="music_item_cover_corner_radius">4dp</dimen>
+
+    <!-- Bible -->
+    <dimen name="bible_verse_padding">16dp</dimen>
+    <dimen name="bible_verse_number_size">14sp</dimen>
+    <dimen name="bible_verse_text_size">16sp</dimen>
+
+    <!-- PDF -->
+    <dimen name="pdf_page_margin">16dp</dimen>
+    <dimen name="pdf_page_corner_radius">8dp</dimen>
+    <dimen name="pdf_controls_size">48dp</dimen>
+    <dimen name="pdf_controls_margin">16dp</dimen>
+</resources> 

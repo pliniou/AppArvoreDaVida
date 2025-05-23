@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#4CAF50</color>
+    <color name="primary_dark">#388E3C</color>
+    <color name="primary_light">#C8E6C9</color>
+    <color name="accent">#FF9800</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="icons">#FFFFFF</color>
+    <color name="divider">#BDBDBD</color>
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="error">#B00020</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FFC107</color>
+    <color name="info">#2196F3</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="ripple">#33000000</color>
+    <color name="ripple_light">#33FFFFFF</color>
+    <color name="ripple_dark">#33000000</color>
+    <color name="ripple_accent">#33FF9800</color>
+    <color name="ripple_primary">#334CAF50</color>
+    <color name="ripple_error">#33B00020</color>
+    <color name="ripple_success">#334CAF50</color>
+    <color name="ripple_warning">#33FFC107</color>
+    <color name="ripple_info">#332196F3</color>
+    <color name="ripple_black">#33000000</color>
+    <color name="ripple_white">#33FFFFFF</color>
+    <color name="ripple_transparent">#00000000</color>
+</resources>
