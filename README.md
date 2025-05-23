@@ -1,10 +1,42 @@
-# App Árvore da Vida
+# App Arvore da Vida
 
-Aplicativo Android para leitura da Bíblia, hinos, partituras e reprodução de músicas.
+Este projeto é um aplicativo Android nativo desenvolvido em Kotlin, focado em recursos relacionados à Bíblia, hinos e partituras, com funcionalidades de reprodução de áudio.
+
+## Estado Atual do Projeto
+
+O projeto está em desenvolvimento ativo, com a estrutura arquitetural e as principais tecnologias configuradas para suportar as funcionalidades planejadas. As camadas de UI, navegação, gerenciamento de estado (ViewModels) e acesso a dados estão sendo implementadas.
+
+## Tecnologias e Arquitetura
+
+*   **Linguagem:** Kotlin 1.9.22
+*   **Framework UI:** Jetpack Compose (com Compose BOM 2024.02.00)
+*   **Arquitetura:** MVVM (Model-View-ViewModel)
+*   **Injeção de Dependência:** Hilt
+*   **Navegação:** Navigation Compose 2.7.7
+*   **Persistência de Preferências:** Jetpack DataStore Preferences 1.0.0
+*   **Serialização de Dados:** Kotlinx Serialization 1.6.2 e Gson 2.10.1 (Nota: Verificar e padronizar o uso entre ambas)
+*   **Reprodução de Mídia:** ExoPlayer Media3 1.2.1
+*   **Renderização de PDF:** `androidx.pdf:pdf-renderer` 2.0.0
+*   **Carregamento de Imagens:** Coil 2.5.0
+*   **Testes:** Kotlin Coroutines Test 1.7.3
+
+## Funcionalidades Implementadas (Baseado na Estrutura e Dependências)
+
+*   Estrutura base da UI com Jetpack Compose.
+*   Configuração inicial da navegação entre telas usando Navigation Compose.
+*   Implementação de ViewModels para gerenciar o estado da UI e lógica de negócio.
+*   Estrutura da camada de dados (`data/bible/dao`, `data/bible/entity`) para acesso aos conteúdos (presumivelmente lendo de assets/JSON).
+*   Configuração do Hilt para injeção de dependências nas camadas do aplicativo.
+*   Suporte à persistência de preferências usando DataStore.
+*   Previsão e estrutura para:
+    *   Leitura e exibição do conteúdo da Bíblia (de assets/JSON).
+    *   Exibição de letras de hinos (de assets).
+    *   Reprodução de arquivos de áudio MP3 (de assets).
+    *   Renderização e exibição de partituras em formato PDF (de assets).
 
 ## Estrutura do Projeto
 
-O projeto segue o padrão MVVM (Model-View-ViewModel) e está organizado nos seguintes pacotes principais em `app/src/main/java/com/example/apparvoredavida/`:
+O projeto segue a estrutura de pacotes padrão para aplicativos Android com MVVM e Injeção de Dependência:
 
 -   `ui/`: Contém os componentes de interface do usuário, telas (screens), temas e navegação.
 -   `model/`: Define as classes de modelo de dados.

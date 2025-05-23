@@ -41,14 +41,12 @@ import com.example.apparvoredavida.ui.components.LoadingOverlay
 import com.example.apparvoredavida.viewmodel.MusicaViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.apparvoredavida.viewmodel.VisualizacaoMusica
-import com.example.apparvoredavida.model.TipoFavorito
 import com.example.apparvoredavida.ui.screens.ReprodutorScreen
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.items
 import com.example.apparvoredavida.ui.navigation.Screen
-import com.example.apparvoredavida.model.Favorite.Type
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -119,10 +117,10 @@ fun MusicasScreen(navController: NavController = rememberNavController()) {
                                     navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
                                 },
                                 onFavoriteClick = { musica ->
-                                    favoritosViewModel.toggleFavorite(musica)
+                                    favoritosViewModel.toggleFavoriteMusic(musica)
                                 },
                                 isFavorite = { musica ->
-                                    favoritosViewModel.isFavorite(musica).collectAsState(initial = false).value
+                                    favoritosViewModel.isMusicFavoriteFlow(musica.id).collectAsState(initial = false).value
                                 },
                                 musics = if (albumExpandido == album.id) {
                                     musicaViewModel.getAlbumById(album.id).collectAsStateWithLifecycle().value.second
@@ -199,8 +197,8 @@ private fun AlbumCard(
                         MusicListItem(
                             music = music,
                             onMusicClick = onMusicClick,
-                            onFavoriteClick = onFavoriteClick,
-                            isFavorite = isFavorite(music)
+                            onFavoriteClick = { favoritosViewModel.toggleFavoriteMusic(music) },
+                            isFavorite = favoritosViewModel.isMusicFavoriteFlow(music.id).collectAsState(initial = false).value
                         )
                     }
                 }

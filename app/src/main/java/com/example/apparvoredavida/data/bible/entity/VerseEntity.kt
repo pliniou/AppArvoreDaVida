@@ -3,6 +3,7 @@ package com.example.apparvoredavida.data.bible.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
@@ -12,7 +13,8 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"], // Nome da coluna PK na tabela 'book'
         childColumns = ["book_id"], // Nome da coluna FK na tabela 'verse'
         onDelete = ForeignKey.CASCADE // Opcional: define o comportamento ao deletar um livro
-    )]
+    )],
+    indices = [Index(value = ["book_id"])]
 )
 data class VerseEntity(
     @PrimaryKey @ColumnInfo(name = "id") val verseId: Int,

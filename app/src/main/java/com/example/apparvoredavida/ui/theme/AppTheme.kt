@@ -15,12 +15,14 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.apparvoredavida.viewmodel.Preferencias
-import com.example.apparvoredavida.viewmodel.TamanhoFonte
-import com.example.apparvoredavida.viewmodel.TemaApp
 import com.example.apparvoredavida.R
 import java.io.IOException
 import android.os.Build
+import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.apparvoredavida.util.TamanhoFonte
+import com.example.apparvoredavida.model.TemaApp
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -88,13 +90,21 @@ fun fontFamilyWithFallback(context: Context, fontFileName: String): FontFamily? 
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    temaApp: TemaApp,
-    fontePreferida: String,
-    tamanhoFontePreferido: TamanhoFonte,
+    viewModel: PreferenciasViewModel = hiltViewModel(),
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
+    val preferencias by viewModel.preferencias.collectAsStateWithLifecycle()
+    val systemDarkTheme = isSystemInDarkTheme()
+
+    val darkTheme = remember(preferencias.tema, systemDarkTheme) {
+        when (preferencias.tema) {
+            TemaApp.SISTEMA -> systemDarkTheme
+            TemaApp.CLARO -> false
+            TemaApp.ESCURO -> true
+        }
+    }
+
     val colorScheme = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -102,8 +112,8 @@ fun AppTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val fontFamily: FontFamily? = fontFamilyWithFallback(context, fontePreferida)
-    val baseTypography = when (tamanhoFontePreferido) {
+    val fontFamily: FontFamily? = fontFamilyWithFallback(context, preferencias.fonte)
+    val baseTypography = when (preferencias.tamanhoFonte) {
         TamanhoFonte.PEQUENO -> Typography.copy(
             bodyLarge = Typography.bodyLarge.copy(fontSize = 14.sp),
             titleLarge = Typography.titleLarge.copy(fontSize = 18.sp),

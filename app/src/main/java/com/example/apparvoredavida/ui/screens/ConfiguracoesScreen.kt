@@ -50,67 +50,61 @@ fun ConfiguracoesScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Seção de Tema
-            item {
-                Text("Tema", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    TemaApp.values().forEach { tema ->
-                        FilterChip(
-                            selected = preferencias.tema == tema,
-                            onClick = { viewModel.atualizarTema(tema) },
-                            label = {
-                                Text(
-                                    when (tema) {
-                                        TemaApp.CLARO -> "Claro"
-                                        TemaApp.ESCURO -> "Escuro"
-                                        TemaApp.SISTEMA -> "Sistema"
-                                    }
-                                )
-                            }
-                        )
-                    }
+            Text("Tema", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                TemaApp.values().forEach { tema ->
+                    FilterChip(
+                        selected = preferencias.tema == tema,
+                        onClick = { viewModel.atualizarTema(tema) },
+                        label = {
+                            Text(
+                                when (tema) {
+                                    TemaApp.CLARO -> "Claro"
+                                    TemaApp.ESCURO -> "Escuro"
+                                    TemaApp.SISTEMA -> "Sistema"
+                                }
+                            )
+                        }
+                    )
                 }
             }
 
             // Seção de Fonte
-            item {
-                Text("Fonte", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(8.dp))
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(fontesDisponiveis) { fonteNome ->
-                        FilterChip(
-                            selected = preferencias.fonte == fonteNome,
-                            onClick = { viewModel.atualizarFonte(fonteNome) },
-                            label = { Text(fonteNome) }
-                        )
-                    }
+            Text("Fonte", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(fontesDisponiveis) { fonteNome ->
+                    FilterChip(
+                        selected = preferencias.fonte == fonteNome,
+                        onClick = { viewModel.atualizarFonte(fonteNome) },
+                        label = { Text(fonteNome) }
+                    )
                 }
             }
 
             // Seção de Tamanho da Fonte
-            item {
-                Text("Tamanho da Fonte", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(8.dp))
-                Slider(
-                    value = preferencias.tamanhoFonte.ordinal.toFloat(),
-                    onValueChange = { newValue ->
-                        val novoTamanho = TamanhoFonte.values().getOrElse(newValue.toInt()) { TamanhoFonte.MEDIO }
-                        viewModel.atualizarTamanhoFonte(novoTamanho)
-                    },
-                    valueRange = 0f..(TamanhoFonte.values().size - 1).toFloat(),
-                    steps = TamanhoFonte.values().size - 2,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Text(
-                    "Tamanho atual: ${preferencias.tamanhoFonte}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text("Tamanho da Fonte", style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+            Slider(
+                value = preferencias.tamanhoFonte.ordinal.toFloat(),
+                onValueChange = { newValue ->
+                    val novoTamanho = TamanhoFonte.values().getOrElse(newValue.toInt()) { TamanhoFonte.MEDIO }
+                    viewModel.atualizarTamanhoFonte(novoTamanho)
+                },
+                valueRange = 0f..(TamanhoFonte.values().size - 1).toFloat(),
+                steps = TamanhoFonte.values().size - 2,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                "Tamanho atual: ${preferencias.tamanhoFonte}",
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
