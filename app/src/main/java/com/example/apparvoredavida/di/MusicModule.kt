@@ -1,10 +1,12 @@
 package com.example.apparvoredavida.di
 
+import android.content.Context
 import com.example.apparvoredavida.data.repository.MusicRepository
 import com.example.apparvoredavida.data.repository.impl.MusicRepositoryImpl
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -13,11 +15,13 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class MusicModule {
+object MusicModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindMusicRepository(
-        musicRepositoryImpl: MusicRepositoryImpl
-    ): MusicRepository
+    fun provideMusicRepository(
+        @ApplicationContext context: Context
+    ): MusicRepository {
+        return MusicRepositoryImpl(context)
+    }
 } 

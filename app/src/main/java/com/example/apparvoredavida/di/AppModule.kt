@@ -4,31 +4,17 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.example.apparvoredavida.data.bible.dao.BibleDao
-import com.example.apparvoredavida.data.bible.dao.impl.BibleDaoImpl
-import com.example.apparvoredavida.data.bible.entity.Book
-import com.example.apparvoredavida.data.bible.entity.Translation
-import com.example.apparvoredavida.data.bible.entity.Verse
-import com.example.apparvoredavida.data.bible.entity.VerseDetails
-import com.example.apparvoredavida.data.bible.repository.BibleRepository
-import com.example.apparvoredavida.data.bible.repository.impl.BibleRepositoryImpl
-import com.example.apparvoredavida.data.repository.HymnRepository
-import com.example.apparvoredavida.data.repository.impl.HymnRepositoryImpl
-import com.example.apparvoredavida.data.repository.MusicRepository
-import com.example.apparvoredavida.data.repository.ScoreRepository
-import com.example.apparvoredavida.data.repository.impl.MusicRepositoryImpl
-import com.example.apparvoredavida.data.repository.impl.ScoreRepositoryImpl
-import com.example.apparvoredavida.util.AssetManager
-import com.example.apparvoredavida.util.CacheManager
-import com.example.apparvoredavida.util.ErrorHandler
+import androidx.room.Room
+import com.example.apparvoredavida.data.bible.BibleDatabase
+import com.example.apparvoredavida.data.bible.BibleDao
+import com.example.apparvoredavida.data.repository.*
+import com.example.apparvoredavida.data.repository.impl.*
 import com.example.apparvoredavida.util.PdfLoader
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import javax.inject.Singleton
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -48,8 +34,18 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBibleDao(@ApplicationContext context: Context): BibleDao {
-        return BibleDaoImpl(context)
+    fun provideBibleDatabase(@ApplicationContext context: Context): BibleDatabase {
+        return Room.databaseBuilder(
+            context,
+            BibleDatabase::class.java,
+            "bible_database"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBibleDao(database: BibleDatabase): BibleDao {
+        return database.bibleDao()
     }
 
     @Provides
@@ -60,19 +56,37 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideAssetManager(@ApplicationContext context: Context): AssetManager {
-        return AssetManager(context)
+    fun provideFavoritesRepository(dataStore: DataStore<Preferences>): FavoritesRepository {
+        return FavoritesRepositoryImpl(dataStore)
     }
 
     @Provides
     @Singleton
-    fun provideCacheManager(dataStore: DataStore<Preferences>): CacheManager {
-        return CacheManager(dataStore)
+    fun provideMusicRepository(@ApplicationContext context: Context): MusicRepository {
+        return MusicRepositoryImpl(context)
     }
 
     @Provides
     @Singleton
-    fun provideErrorHandler(@ApplicationContext context: Context): ErrorHandler {
-        return ErrorHandler(context)
+    fun provideBibleRepository(bibleDao: BibleDao): BibleRepository {
+        return BibleRepositoryImpl(bibleDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideHymnRepository(@ApplicationContext context: Context): HymnRepository {
+        return HymnRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providePartituraRepository(@ApplicationContext context: Context): PartituraRepository {
+        return PartituraRepositoryImpl(context)
+    }
+
+    @Provides
+    @Singleton
+    fun providePreferencesRepository(dataStore: DataStore<Preferences>): PreferencesRepository {
+        return PreferencesRepositoryImpl(dataStore)
     }
 } 

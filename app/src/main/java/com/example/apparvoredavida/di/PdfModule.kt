@@ -3,6 +3,7 @@ package com.example.apparvoredavida.di
 import android.content.Context
 import com.example.apparvoredavida.data.datastore.PdfPreferences
 import com.example.apparvoredavida.data.repository.PdfRepository
+import com.example.apparvoredavida.data.repository.impl.PdfRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,6 +29,6 @@ object PdfModule {
         @ApplicationContext context: Context,
         pdfPreferences: PdfPreferences
     ): PdfRepository {
-        return PdfRepository(context, pdfPreferences)
+        return PdfRepositoryImpl(context, pdfPreferences)
     }
 } 

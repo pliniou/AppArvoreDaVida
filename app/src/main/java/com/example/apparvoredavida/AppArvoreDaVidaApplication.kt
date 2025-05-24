@@ -3,6 +3,7 @@ package com.example.apparvoredavida
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
+import com.example.apparvoredavida.BuildConfig
 
 @HiltAndroidApp
 class AppArvoreDaVidaApplication : Application() {

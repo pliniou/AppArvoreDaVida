@@ -1,10 +1,12 @@
 package com.example.apparvoredavida.di
 
+import android.content.Context
 import com.example.apparvoredavida.data.repository.ScoreRepository
 import com.example.apparvoredavida.data.repository.impl.ScoreRepositoryImpl
-import dagger.Binds
 import dagger.Module
+import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
@@ -13,11 +15,13 @@ import javax.inject.Singleton
  */
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class ScoreModule {
+object ScoreModule {
 
-    @Binds
+    @Provides
     @Singleton
-    abstract fun bindScoreRepository(
-        scoreRepositoryImpl: ScoreRepositoryImpl
-    ): ScoreRepository
+    fun provideScoreRepository(
+        @ApplicationContext context: Context
+    ): ScoreRepository {
+        return ScoreRepositoryImpl(context)
+    }
 } 
