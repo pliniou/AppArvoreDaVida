@@ -94,7 +94,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     
     // PDF Renderer
-    implementation(libs.androidx.pdf.renderer)
+    implementation(libs.androidx.pdfium)
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
