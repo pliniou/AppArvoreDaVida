@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     id("com.google.dagger.hilt.android")
-    id("kotlin-kapt")
 }
 
 android {
@@ -42,7 +41,6 @@ android {
 
     buildFeatures {
         compose = true
-        viewBinding = true
     }
 
     composeOptions {
@@ -93,8 +91,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences-core:1.0.0")
     
     // Kotlinx Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
+    implementation(libs.kotlinx.serialization.json)
     
     // Kotlinx Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
@@ -106,13 +103,6 @@ dependencies {
     // ExoPlayer para músicas
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
-    
-    // PDF Renderer
-    implementation(libs.androidx.pdfium)
-    
-    // Serialization
-    implementation(libs.kotlinx.serialization.json)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     
     // Testing
     testImplementation(libs.junit)
@@ -126,7 +116,7 @@ dependencies {
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.50")
-    kapt("com.google.dagger:hilt-android-compiler:2.50")
+    ksp("com.google.dagger:hilt-android-compiler:2.50")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Android Core
@@ -143,11 +133,10 @@ dependencies {
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
 
     // Hilt Testing
-    testImplementation(libs.hilt.android.testing)
-    ksp(libs.hilt.compiler) // Compiler needs to be specified again for test
-    androidTestImplementation(libs.hilt.android.testing)
-    ksp(libs.hilt.compiler) // Compiler needs to be specified again for android test
+    testImplementation("com.google.dagger:hilt-android-testing:2.50")
+    ksp("com.google.dagger:hilt-android-compiler:2.50")
+    androidTestImplementation("com.google.dagger:hilt-android-testing:2.50")
 }
