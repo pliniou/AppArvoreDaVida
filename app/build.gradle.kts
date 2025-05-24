@@ -164,7 +164,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
     // PDF Renderer
-    implementation("androidx.pdfium:pdfium-android:2.0.0")
+    implementation("androidx.pdf:pdf-renderer:2.0.0")
 
     // Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.50")

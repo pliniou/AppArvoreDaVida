@@ -69,7 +69,8 @@ class FavoritesViewModel @Inject constructor(
             // Fetch Music Details usando MusicRepository
             musicIds.forEach { musicId ->
                 musicRepository.getMusicById(musicId)?.let { music ->
-                    items.add(FavoriteDisplayItem.MusicItem(musicId, music.title ?: "Unknown Title", music.artist, music))
+                    items.add(FavoriteDisplayItem.MusicItem(musicId,
+                        music.title, music.artist, music))
                 }
             }
 
