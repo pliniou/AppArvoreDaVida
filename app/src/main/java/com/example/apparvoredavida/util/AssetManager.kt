@@ -13,16 +13,16 @@ import javax.inject.Singleton
  */
 @Singleton
 class AssetManager @Inject constructor(
-    private val context: Context
+    internal val context: Context
 ) {
-    private val json = Json { ignoreUnknownKeys = true }
+    internal val json = Json { ignoreUnknownKeys = true }
 
     /**
      * Lê um arquivo JSON dos assets e converte para o tipo especificado.
      * @param path Caminho do arquivo nos assets
      * @return Objeto deserializado ou null em caso de erro
      */
-    suspend inline fun <reified T> readJsonAsset(path: String): T? = withContext(Dispatchers.IO) {
+    suspend fun <reified T> readJsonAsset(path: String): T? = withContext(Dispatchers.IO) {
         try {
             context.assets.open(path).use { inputStream ->
                 val jsonString = inputStream.bufferedReader().use { it.readText() }

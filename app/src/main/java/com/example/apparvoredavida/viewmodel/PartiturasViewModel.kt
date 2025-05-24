@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import com.example.apparvoredavida.model.Partitura
 import com.example.apparvoredavida.data.repository.PartituraRepository
 import com.example.apparvoredavida.data.repository.FavoritesRepository
+import android.util.Log
 
 /**
  * ViewModel responsável por gerenciar a funcionalidade de partituras.
@@ -28,6 +29,12 @@ class PartiturasViewModel @Inject constructor(
     private val _favorites = MutableStateFlow<Set<String>>(emptySet())
     val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
     init {
         viewModelScope.launch {
             loadPartituras()
@@ -40,9 +47,14 @@ class PartiturasViewModel @Inject constructor(
      */
     private suspend fun loadPartituras() {
         try {
+            _isLoading.value = true
+            _errorMessage.value = null
             _partituras.value = partituraRepository.getPartituras()
         } catch (e: Exception) {
-            // TODO: Implementar tratamento de erro adequado
+            Log.e("PartiturasVM", "Erro ao carregar partituras: ${e.message}")
+            _errorMessage.value = "Erro ao carregar partituras: ${e.message}"
+        } finally {
+            _isLoading.value = false
         }
     }
 
@@ -51,11 +63,16 @@ class PartiturasViewModel @Inject constructor(
      */
     private suspend fun loadFavorites() {
         try {
+            _isLoading.value = true
+            _errorMessage.value = null
             favoritesRepository.favoriteScoreIdsFlow.collect { favoriteIds ->
                 _favorites.value = favoriteIds
             }
         } catch (e: Exception) {
-            // TODO: Implementar tratamento de erro adequado
+            Log.e("PartiturasVM", "Erro ao carregar favoritos: ${e.message}")
+            _errorMessage.value = "Erro ao carregar favoritos: ${e.message}"
+        } finally {
+            _isLoading.value = false
         }
     }
 
@@ -66,13 +83,15 @@ class PartiturasViewModel @Inject constructor(
     fun toggleFavorite(partituraId: String) {
         viewModelScope.launch {
             try {
+                _errorMessage.value = null
                 if (_favorites.value.contains(partituraId)) {
                     favoritesRepository.removeFavoriteScore(partituraId)
                 } else {
                     favoritesRepository.addFavoriteScore(partituraId)
                 }
             } catch (e: Exception) {
-                // TODO: Implementar tratamento de erro adequado
+                Log.e("PartiturasVM", "Erro ao alternar favorito: ${e.message}")
+                _errorMessage.value = "Erro ao alternar favorito: ${e.message}"
             }
         }
     }

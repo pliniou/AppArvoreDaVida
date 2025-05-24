@@ -25,7 +25,7 @@ object Constants {
 
     // Diretórios de assets (padronizado)
     const val DIR_BIBLE = "bible"
-    const val DIR_HINARIO = "hinos"
+    const val DIR_HINARIO = "hinario"
     const val DIR_PARTITURAS = "partituras"
     const val DIR_MUSICAS = "musicas"
     const val DIR_FONTS = "fonts"

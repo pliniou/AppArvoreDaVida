@@ -1,7 +1,6 @@
 package com.example.apparvoredavida.di
 
 import android.content.Context
-import android.content.res.AssetManager
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
@@ -18,7 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = Constants.DATASTORE_NAME)
 
 /**
  * Módulo de injeção de dependência principal do aplicativo.
@@ -47,14 +46,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideErrorHandler(): ErrorHandler {
-        return ErrorHandler()
-    }
-
-    @Provides
-    @Singleton
-    fun providePdfLoader(@ApplicationContext context: Context): PdfLoader {
-        return PdfLoader(context)
+    fun provideErrorHandler(@ApplicationContext context: Context): ErrorHandler {
+        return ErrorHandler(context)
     }
 
     @Provides
@@ -63,7 +56,7 @@ object AppModule {
         return Room.databaseBuilder(
             context,
             BibleDatabase::class.java,
-            "bible.db"
+            Constants.DATABASE_NAME
         ).build()
     }
 
@@ -81,21 +74,19 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideMusicRepository(
-        @ApplicationContext context: Context,
-        assetManager: AssetManager,
-        errorHandler: ErrorHandler
-    ): MusicRepository {
-        return MusicRepositoryImpl(context, assetManager, errorHandler)
+    fun providePreferencesRepository(dataStore: DataStore<Preferences>): PreferencesRepository {
+        return PreferencesRepositoryImpl(dataStore)
     }
 
     @Provides
     @Singleton
-    fun provideBibleRepository(
+    fun provideMusicRepository(
         @ApplicationContext context: Context,
-        bibleDao: BibleDao
-    ): BibleRepository {
-        return BibleRepositoryImpl(context, bibleDao)
+        assetManager: AssetManager,
+        cacheManager: CacheManager,
+        errorHandler: ErrorHandler
+    ): MusicRepository {
+        return MusicRepositoryImpl(context, assetManager, cacheManager, errorHandler)
     }
 
     @Provides
@@ -116,11 +107,5 @@ object AppModule {
         errorHandler: ErrorHandler
     ): PartituraRepository {
         return PartituraRepositoryImpl(context, assetManager, errorHandler)
-    }
-
-    @Provides
-    @Singleton
-    fun providePreferencesRepository(dataStore: DataStore<Preferences>): PreferencesRepository {
-        return PreferencesRepositoryImpl(dataStore)
     }
 } 

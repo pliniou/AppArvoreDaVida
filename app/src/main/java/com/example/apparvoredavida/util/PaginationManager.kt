@@ -2,6 +2,8 @@ package com.example.apparvoredavida.util
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.paging.LoadParams
+import androidx.paging.LoadResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

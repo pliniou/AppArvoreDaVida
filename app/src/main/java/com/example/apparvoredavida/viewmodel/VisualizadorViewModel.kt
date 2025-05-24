@@ -34,6 +34,7 @@ class VisualizadorViewModel @Inject constructor(
     private var pdfRenderer: PdfRenderer? = null
     private var currentPage: PdfRenderer.Page? = null
     private var tempFile: File? = null
+    private var currentFileId: String? = null
 
     private val _zoom = MutableStateFlow(1.0f)
     val zoom: StateFlow<Float> = _zoom.asStateFlow()
@@ -170,6 +171,7 @@ class VisualizadorViewModel @Inject constructor(
             try {
                 _isLoading.value = true
                 _errorMessage.value = null
+                currentFileId = fileId
                 
                 // Limpa recursos anteriores
                 closeCurrentPdf()
@@ -230,6 +232,7 @@ class VisualizadorViewModel @Inject constructor(
                 
                 // Carrega a nova página usando o PdfLoader
                 val screenWidth = getApplication<Application>().resources.displayMetrics.widthPixels
+                val fileId = currentFileId ?: throw IllegalStateException("Nenhum arquivo carregado")
                 val bitmap = pdfLoader.loadPdfPage(
                     "${Constants.DIR_PARTITURAS}/$fileId${Constants.EXTENSION_PDF}",
                     pageIndex,
@@ -260,11 +263,11 @@ class VisualizadorViewModel @Inject constructor(
         tempFile?.delete()
         tempFile = null
         _currentBitmap.value = null
+        currentFileId = null
     }
 
     override fun onCleared() {
         closeCurrentPdf()
-        pdfLoader.clearCache()
         super.onCleared()
     }
 } 

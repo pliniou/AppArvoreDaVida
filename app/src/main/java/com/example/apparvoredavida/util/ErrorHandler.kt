@@ -30,16 +30,16 @@ class ErrorHandler @Inject constructor(
      */
     fun handleError(throwable: Throwable) {
         when (throwable) {
-            is AssetNotFoundException -> {
-                Log.e(TAG, "Asset não encontrado: ${throwable.message}")
-                // TODO: Implementar notificação ao usuário
-            }
             is CacheException -> {
                 Log.e(TAG, "Erro no cache: ${throwable.message}")
                 // TODO: Implementar notificação ao usuário
             }
             is NetworkException -> {
                 Log.e(TAG, "Erro de rede: ${throwable.message}")
+                // TODO: Implementar notificação ao usuário
+            }
+            is AssetNotFoundException -> {
+                Log.e(TAG, "Asset não encontrado: ${throwable.message}")
                 // TODO: Implementar notificação ao usuário
             }
             else -> {
@@ -49,11 +49,6 @@ class ErrorHandler @Inject constructor(
         }
     }
 }
-
-/**
- * Exceção lançada quando um asset não é encontrado.
- */
-class AssetNotFoundException(message: String) : Exception(message)
 
 /**
  * Exceção lançada quando ocorre um erro no cache.

@@ -1,11 +1,11 @@
 package com.example.apparvoredavida.model
 
 /**
- * Classe que representa uma versão da Bíblia (ex: ACF, ARA, NVI).
- * @param name Nome completo da versão (ex: "Almeida Corrigida Fiel")
+ * Classe que representa uma tradução da Bíblia.
+ * @param name Nome completo da tradução (ex: "Almeida Corrigida Fiel")
  * @param dbPath Caminho do arquivo SQLite no assets (ex: "ACF.sqlite")
  */
-data class BibleVersion(
+data class BibleTranslation(
     val name: String,
     val dbPath: String
 ) 

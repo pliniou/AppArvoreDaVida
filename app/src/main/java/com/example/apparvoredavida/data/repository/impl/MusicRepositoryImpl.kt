@@ -8,6 +8,7 @@ import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.util.CacheManager
 import com.example.apparvoredavida.util.Constants
 import com.example.apparvoredavida.util.ErrorHandler
+import com.example.apparvoredavida.util.AssetNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,21 +33,18 @@ class MusicRepositoryImpl @Inject constructor(
 
     override suspend fun getMusics(): List<Music> {
         try {
-            // Retorna do cache se disponível e não estiver desatualizado
-            if (musicsCache != null && !cacheManager.isCacheStale(Constants.CACHE_MAX_AGE)) {
-                return musicsCache!!
-            }
+            // Retorna do cache se disponível
+            musicsCache?.let { return it }
 
             // Carrega a lista de arquivos MP3 das músicas
-            val mp3Files = assetManager.listAssetFiles(Constants.DIR_MP3)
+            val mp3Files = assetManager.listAssetFiles(Constants.DIR_MUSICAS)
             
             // Carrega o arquivo de metadados das músicas
-            val musicsMetadata = assetManager.readJsonAsset<List<Music>>("${Constants.DIR_MP3}/metadata.json")
+            val musicsMetadata = assetManager.readJsonAsset<List<Music>>("${Constants.DIR_MUSICAS}/${Constants.METADATA_FILE}")
                 ?: throw AssetNotFoundException("Arquivo de metadados das músicas não encontrado")
 
             // Atualiza o cache e retorna
             musicsCache = musicsMetadata
-            cacheManager.updateCacheTimestamp(System.currentTimeMillis())
             return musicsMetadata
         } catch (e: Exception) {
             errorHandler.handleError(e)
@@ -77,18 +75,15 @@ class MusicRepositoryImpl @Inject constructor(
 
     override suspend fun getAlbums(): List<Album> {
         try {
-            // Retorna do cache se disponível e não estiver desatualizado
-            if (albumsCache != null && !cacheManager.isCacheStale(Constants.CACHE_MAX_AGE)) {
-                return albumsCache!!
-            }
+            // Retorna do cache se disponível
+            albumsCache?.let { return it }
 
             // Carrega o arquivo de metadados dos álbuns
-            val albumsMetadata = assetManager.readJsonAsset<List<Album>>("${Constants.DIR_MP3}/albums.json")
+            val albumsMetadata = assetManager.readJsonAsset<List<Album>>("${Constants.DIR_MUSICAS}/${Constants.ALBUMS_FILE}")
                 ?: throw AssetNotFoundException("Arquivo de metadados dos álbuns não encontrado")
 
             // Atualiza o cache e retorna
             albumsCache = albumsMetadata
-            cacheManager.updateCacheTimestamp(System.currentTimeMillis())
             return albumsMetadata
         } catch (e: Exception) {
             errorHandler.handleError(e)

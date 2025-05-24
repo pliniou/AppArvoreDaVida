@@ -141,7 +141,7 @@ class PreferenciasViewModel @Inject constructor(
             _isDarkMode.value = preferencesRepository.getDarkMode()
             _fontSize.value = preferencesRepository.getFontSize()
         } catch (e: Exception) {
-            // TODO: Implementar tratamento de erro adequado
+            Log.e("PreferenciasVM", "Erro ao carregar preferências: ${e.message}")
         }
     }
 
@@ -155,7 +155,7 @@ class PreferenciasViewModel @Inject constructor(
                 preferencesRepository.setDarkMode(newValue)
                 _isDarkMode.value = newValue
             } catch (e: Exception) {
-                // TODO: Implementar tratamento de erro adequado
+                Log.e("PreferenciasVM", "Erro ao alternar modo escuro: ${e.message}")
             }
         }
     }
@@ -170,7 +170,7 @@ class PreferenciasViewModel @Inject constructor(
                 preferencesRepository.setFontSize(size)
                 _fontSize.value = size
             } catch (e: Exception) {
-                // TODO: Implementar tratamento de erro adequado
+                Log.e("PreferenciasVM", "Erro ao definir tamanho da fonte: ${e.message}")
             }
         }
     }

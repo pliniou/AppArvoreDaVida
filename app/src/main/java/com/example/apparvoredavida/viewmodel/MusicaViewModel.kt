@@ -33,6 +33,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.apparvoredavida.data.repository.MusicRepository
 import com.example.apparvoredavida.data.repository.FavoritesRepository
+import com.example.apparvoredavida.model.VisualizacaoMusica
 
 /**
  * ViewModel responsável por gerenciar a funcionalidade de músicas.
@@ -41,10 +42,11 @@ import com.example.apparvoredavida.data.repository.FavoritesRepository
 @HiltViewModel
 class MusicaViewModel @Inject constructor(
     private val musicRepository: MusicRepository,
-    private val favoritesRepository: FavoritesRepository
-) : ViewModel() {
-    private val musicLoader = MusicLoader(getApplication())
-    private val metadataCache = MusicMetadataCache(getApplication())
+    private val favoritesRepository: FavoritesRepository,
+    private val application: Application
+) : AndroidViewModel(application) {
+    private val musicLoader = MusicLoader(application)
+    private val metadataCache = MusicMetadataCache(application)
     
     private val _albuns = MutableStateFlow<List<Album>>(emptyList())
     val albuns: StateFlow<List<Album>> = _albuns.asStateFlow()
@@ -98,35 +100,74 @@ class MusicaViewModel @Inject constructor(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
-                    _duration.value = musicLoader.getDuration() // Supondo que MusicLoader tenha getDuration()
+                    _duration.value = musicLoader.getDuration()
                 }
             }
-             override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                 _currentPosition.value = 0L // Reset position on track change
-                 _duration.value = 0L // Reset duration on track change, will be updated in STATE_READY
-             }
+                _duration.value = 0L // Reset duration on track change, will be updated in STATE_READY
+            }
         })
     }
 
     /**
      * Carrega a lista de músicas disponíveis.
      */
-    private suspend fun loadMusics() {
-        try {
-            _musics.value = musicRepository.getAllMusics()
-        } catch (e: Exception) {
-            // TODO: Implementar tratamento de erro adequado
+    private fun loadMusics() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                val musicFiles = AssetManager.listMusicFiles(application)
+                val musics = mutableListOf<Music>()
+                
+                // Carrega metadados do cache primeiro
+                metadataCache.getAllMusicMetadata().collect { cachedMusics ->
+                    musics.addAll(cachedMusics)
+                }
+                
+                // Carrega metadados faltantes e atualiza cache
+                val newMusics = musicFiles.mapNotNull { file ->
+                    if (!musics.any { it.path == file }) {
+                        musicLoader.loadMusicMetadata(file)?.also { music ->
+                            musics.add(music)
+                            metadataCache.saveMusicMetadata(music)
+                        }
+                    } else null
+                }
+
+                // Group by album
+                val albumGroups = musics.groupBy { it.album ?: "Sem Álbum" }
+
+                // Create Album objects
+                val albums = albumGroups.map { (albumName, songs) ->
+                    Album(
+                        id = albumName, // Use album name as ID for simplicity
+                        title = albumName, // Use album name as title
+                        coverPath = songs.firstOrNull()?.coverPath,
+                    )
+                }.sortedBy { it.title }
+                
+                _albuns.value = albums
+                _albumMusicsMap.value = albumGroups
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
     /**
      * Carrega a lista de músicas favoritas.
      */
-    private suspend fun loadFavorites() {
-        try {
-            _favorites.value = favoritesRepository.getFavoriteMusics()
-        } catch (e: Exception) {
-            // TODO: Implementar tratamento de erro adequado
+    private fun loadFavorites() {
+        viewModelScope.launch {
+            try {
+                _favorites.value = favoritesRepository.getFavoriteMusics()
+            } catch (e: Exception) {
+                // TODO: Implementar tratamento de erro adequado
+            }
         }
     }
 
@@ -158,55 +199,10 @@ class MusicaViewModel @Inject constructor(
         return _favorites.value.contains(musicId)
     }
 
-    private fun loadMusics() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            try {
-                val musicFiles = AssetManager.listMusicFiles(getApplication())
-                val musics = mutableListOf<Music>()
-                
-                // Carrega metadados do cache primeiro
-                metadataCache.getAllMusicMetadata().collect { cachedMusics ->
-                    musics.addAll(cachedMusics)
-                }
-                
-                // Carrega metadados faltantes e atualiza cache
-                val newMusics = musicFiles.mapNotNull { file ->
-                    if (!musics.any { it.path == file }) {
-                         musicLoader.loadMusicMetadata(file)?.also { music ->
-                            musics.add(music)
-                            metadataCache.saveMusicMetadata(music)
-                        }
-                    } else null
-                }
-
-                // Group by album
-                val albumGroups = musics.groupBy { it.album ?: "Sem Álbum" }
-
-                // Create Album objects
-                val albums = albumGroups.map { (albumName, songs) ->
-                    Album(
-                        id = albumName, // Use album name as ID for simplicity
-                        title = albumName, // Use album name as title
-                        coverPath = songs.firstOrNull()?.coverPath,
-                    )
-                }.sortedBy { it.title }
-                
-                _albuns.value = albums
-                _albumMusicsMap.value = albumGroups
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-            } finally {
-                _isLoading.value = false
-            }
-        }
-    }
-
     fun getAlbumById(albumId: String): StateFlow<Pair<Album?, List<Music>>> {
         return _albuns.map { listaDeAlbuns ->
-             val album = listaDeAlbuns.find { it.id == albumId }
-             val musics = _albumMusicsMap.value[albumId] ?: emptyList()
+            val album = listaDeAlbuns.find { it.id == albumId }
+            val musics = _albumMusicsMap.value[albumId] ?: emptyList()
             Pair(album, musics)
         }.stateIn(viewModelScope, SharingStarted.Lazily, Pair(null, emptyList()))
     }
@@ -217,10 +213,10 @@ class MusicaViewModel @Inject constructor(
 
     fun playMusic(music: Music) {
         viewModelScope.launch {
-             musicLoader.prepareMusic(music) // Prepara a música
-             musicLoader.play() // Inicia a reprodução
-             _musicaSelecionada.value = music // Atualiza música selecionada
-             startPositionUpdates() // Inicia a atualização da posição
+            musicLoader.prepareMusic(music) // Prepara a música
+            musicLoader.play() // Inicia a reprodução
+            _musicaSelecionada.value = music // Atualiza música selecionada
+            startPositionUpdates() // Inicia a atualização da posição
         }
     }
 
@@ -240,7 +236,7 @@ class MusicaViewModel @Inject constructor(
         updatePositionJob?.cancel()
         updatePositionJob = viewModelScope.launch {
             while (true) {
-                _currentPosition.value = musicLoader.getCurrentPosition() // Supondo que MusicLoader tenha getCurrentPosition()
+                _currentPosition.value = musicLoader.getCurrentPosition()
                 delay(200L) // Atualiza a cada 200ms
             }
         }
@@ -254,7 +250,7 @@ class MusicaViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         musicLoader.release()
-        stopPositionUpdates() // Garante que o job seja cancelado ao limpar o ViewModel
+        stopPositionUpdates()
     }
 
     fun expandirAlbum(albumId: String) {

@@ -14,6 +14,9 @@ import androidx.datastore.preferences.core.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.apparvoredavida.data.bible.*
+import com.example.apparvoredavida.data.bible.dao.BibleDao
+import com.example.apparvoredavida.data.bible.entity.BookEntity
+import com.example.apparvoredavida.data.bible.entity.VerseEntity
 import androidx.room.Room
 import com.example.apparvoredavida.data.repository.BibleRepository
 
@@ -32,13 +35,13 @@ class BibliaViewModel @Inject constructor(
     private var bibleDao: BibleDao? = null
 
     // Versões disponíveis
-    val versoesDisponiveis: List<BibleVersion> = listOf(
-        BibleVersion("Almeida Corrigida Fiel", "ACF.sqlite"),
-        BibleVersion("Almeida Revista e Atualizada", "ARA.sqlite"),
-        BibleVersion("Almeida Revista e Corrigida", "ARC.sqlite"),
-        BibleVersion("Nova Almeida Atualizada", "NAA.sqlite"),
-        BibleVersion("Nova Bíblia Viva", "NBV.sqlite"),
-        BibleVersion("Nova Tradução na Linguagem de Hoje", "NTLH.sqlite")
+    val versoesDisponiveis: List<BibleTranslation> = listOf(
+        BibleTranslation("Almeida Corrigida Fiel", "ACF.sqlite"),
+        BibleTranslation("Almeida Revista e Atualizada", "ARA.sqlite"),
+        BibleTranslation("Almeida Revista e Corrigida", "ARC.sqlite"),
+        BibleTranslation("Nova Almeida Atualizada", "NAA.sqlite"),
+        BibleTranslation("Nova Bíblia Viva", "NBV.sqlite"),
+        BibleTranslation("Nova Tradução na Linguagem de Hoje", "NTLH.sqlite")
     )
 
     private val versaoAbbrevToDbPath = versoesDisponiveis.associate { versao ->
@@ -60,7 +63,7 @@ class BibliaViewModel @Inject constructor(
     )
 
     private val _versaoSelecionada = MutableStateFlow(versoesDisponiveis.first())
-    val versaoSelecionada: StateFlow<BibleVersion> = _versaoSelecionada.asStateFlow()
+    val versaoSelecionada: StateFlow<BibleTranslation> = _versaoSelecionada.asStateFlow()
 
     private val _nomesLivrosDisponiveis = MutableStateFlow<List<String>>(emptyList())
     val nomesLivrosDisponiveis: StateFlow<List<String>> = _nomesLivrosDisponiveis.asStateFlow()
@@ -79,8 +82,8 @@ class BibliaViewModel @Inject constructor(
     private val _versaoAtual = MutableStateFlow<String>("")
     val versaoAtual: StateFlow<String> = _versaoAtual.asStateFlow()
 
-    private val _versiculos = MutableStateFlow<List<VerseDetails>>(emptyList())
-    val versiculos: StateFlow<List<VerseDetails>> = _versiculos.asStateFlow()
+    private val _versiculos = MutableStateFlow<List<VersiculoDetails>>(emptyList())
+    val versiculos: StateFlow<List<VersiculoDetails>> = _versiculos.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -93,7 +96,7 @@ class BibliaViewModel @Inject constructor(
      * Seleciona uma versão da Bíblia e carrega seu banco de dados.
      * @param versao Versão a ser selecionada
      */
-    fun selecionarVersao(versao: BibleVersion) {
+    fun selecionarVersao(versao: BibleTranslation) {
         if (_versaoSelecionada.value.dbPath != versao.dbPath) {
             _versaoSelecionada.value = versao
             _livroCarregado.value = null
@@ -250,23 +253,23 @@ class BibliaViewModel @Inject constructor(
      * @param verseId ID do versículo no formato VERSAO_ABREV_LIVRO_CAPITULO_VERSICULO
      * @return Detalhes do versículo ou null se não encontrado
      */
-    suspend fun getVerseById(verseId: String): VerseDetails? {
-        return bibleRepository.getVerseById(verseId)
+    suspend fun getVerseById(verseId: String): VersiculoDetails? {
+        return bibleRepository.getSpecificVerse(verseId)
     }
 
-    fun getVersiculosByCapitulo(livroId: String, capituloNumero: Int): List<VerseDetails> {
+    fun getVersiculosByCapitulo(livroId: String, capituloNumero: Int): List<VersiculoDetails> {
         return bibleRepository.getVersiculosByCapitulo(livroId, capituloNumero)
     }
 
-    fun getVersiculosByLivro(livroId: String): List<VerseDetails> {
+    fun getVersiculosByLivro(livroId: String): List<VersiculoDetails> {
         return bibleRepository.getVersiculosByLivro(livroId)
     }
 
-    fun getVersiculosByRange(livroId: String, capituloInicio: Int, capituloFim: Int): List<VerseDetails> {
+    fun getVersiculosByRange(livroId: String, capituloInicio: Int, capituloFim: Int): List<VersiculoDetails> {
         return bibleRepository.getVersiculosByRange(livroId, capituloInicio, capituloFim)
     }
 
-    fun getVersiculosBySearch(query: String): List<VerseDetails> {
+    fun getVersiculosBySearch(query: String): List<VersiculoDetails> {
         return bibleRepository.getVersiculosBySearch(query)
     }
 

@@ -6,6 +6,7 @@ import com.example.apparvoredavida.model.Partitura
 import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.util.Constants
 import com.example.apparvoredavida.util.ErrorHandler
+import com.example.apparvoredavida.util.AssetNotFoundException
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +36,7 @@ class PartituraRepositoryImpl @Inject constructor(
             val pdfFiles = assetManager.listAssetFiles(Constants.DIR_PARTITURAS)
             
             // Carrega o arquivo de metadados das partituras
-            val partiturasMetadata = assetManager.readJsonAsset<List<Partitura>>("${Constants.DIR_PARTITURAS}/metadata.json")
+            val partiturasMetadata = assetManager.readJsonAsset<List<Partitura>>("${Constants.DIR_PARTITURAS}/${Constants.METADATA_FILE}")
                 ?: throw AssetNotFoundException("Arquivo de metadados das partituras não encontrado")
 
             // Atualiza o cache e retorna
