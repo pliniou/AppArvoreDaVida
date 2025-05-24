@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,7 +34,7 @@ fun PdfPageNavigator(
             enabled = currentPage > 0
         ) {
             Icon(
-                imageVector = Icons.Default.KeyboardArrowLeft,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "Página anterior",
                 tint = if (currentPage > 0) {
                     MaterialTheme.colorScheme.primary
@@ -60,7 +58,7 @@ fun PdfPageNavigator(
             enabled = currentPage < totalPages - 1
         ) {
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Próxima página",
                 tint = if (currentPage < totalPages - 1) {
                     MaterialTheme.colorScheme.primary

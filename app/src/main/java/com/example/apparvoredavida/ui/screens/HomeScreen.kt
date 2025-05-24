@@ -49,7 +49,7 @@ private fun HomeContent(
     ) {
         HomeButton(
             text = "Bíblia",
-            icon = Icons.Default.MenuBook,
+            icon = Icons.AutoMirrored.Filled.MenuBook,
             onClick = onBibliaClick
         )
 

@@ -18,7 +18,7 @@ import androidx.room.Room
 
 /**
  * ViewModel responsável por gerenciar a funcionalidade da Bíblia.
- * Implementa acesso ao banco de dados SQLite e gerenciamento de traduções.
+ * Implementa acesso ao banco de dados SQLite e gerenciamento de versões.
  */
 @HiltViewModel
 class BibliaViewModel @Inject constructor(
@@ -29,18 +29,18 @@ class BibliaViewModel @Inject constructor(
     private var currentDatabase: BibleDatabase? = null
     private var bibleDao: BibleDao? = null
 
-    // Traduções disponíveis
-    val traducoesDisponiveis: List<BibleTranslation> = listOf(
-        BibleTranslation("Almeida Corrigida Fiel", "ACF.sqlite"),
-        BibleTranslation("Almeida Revista e Atualizada", "ARA.sqlite"),
-        BibleTranslation("Almeida Revista e Corrigida", "ARC.sqlite"),
-        BibleTranslation("Nova Almeida Atualizada", "NAA.sqlite"),
-        BibleTranslation("Nova Bíblia Viva", "NBV.sqlite"),
-        BibleTranslation("Nova Tradução na Linguagem de Hoje", "NTLH.sqlite")
+    // Versões disponíveis
+    val versoesDisponiveis: List<BibleVersion> = listOf(
+        BibleVersion("Almeida Corrigida Fiel", "ACF.sqlite"),
+        BibleVersion("Almeida Revista e Atualizada", "ARA.sqlite"),
+        BibleVersion("Almeida Revista e Corrigida", "ARC.sqlite"),
+        BibleVersion("Nova Almeida Atualizada", "NAA.sqlite"),
+        BibleVersion("Nova Bíblia Viva", "NBV.sqlite"),
+        BibleVersion("Nova Tradução na Linguagem de Hoje", "NTLH.sqlite")
     )
 
-    private val traducaoAbbrevToDbPath = traducoesDisponiveis.associate { traducao ->
-        traducao.dbPath.replace(".sqlite", "") to traducao.dbPath
+    private val versaoAbbrevToDbPath = versoesDisponiveis.associate { versao ->
+        versao.dbPath.replace(".sqlite", "") to versao.dbPath
     }
 
     // Mapa de abreviações de livro
@@ -57,8 +57,8 @@ class BibliaViewModel @Inject constructor(
         "JD" to 65, "AP" to 66
     )
 
-    private val _traducaoSelecionada = MutableStateFlow(traducoesDisponiveis.first())
-    val traducaoSelecionada: StateFlow<BibleTranslation> = _traducaoSelecionada.asStateFlow()
+    private val _versaoSelecionada = MutableStateFlow(versoesDisponiveis.first())
+    val versaoSelecionada: StateFlow<BibleVersion> = _versaoSelecionada.asStateFlow()
 
     private val _nomesLivrosDisponiveis = MutableStateFlow<List<String>>(emptyList())
     val nomesLivrosDisponiveis: StateFlow<List<String>> = _nomesLivrosDisponiveis.asStateFlow()
@@ -73,23 +73,23 @@ class BibliaViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            carregarBancoDeDadosParaTraducao(_traducaoSelecionada.value.dbPath)
+            carregarBancoDeDadosParaVersao(_versaoSelecionada.value.dbPath)
         }
     }
 
     /**
-     * Seleciona uma tradução da Bíblia e carrega seu banco de dados.
-     * @param traducao Tradução a ser selecionada
+     * Seleciona uma versão da Bíblia e carrega seu banco de dados.
+     * @param versao Versão a ser selecionada
      */
-    fun selecionarTraducao(traducao: BibleTranslation) {
-        if (_traducaoSelecionada.value.dbPath != traducao.dbPath) {
-            _traducaoSelecionada.value = traducao
+    fun selecionarVersao(versao: BibleVersion) {
+        if (_versaoSelecionada.value.dbPath != versao.dbPath) {
+            _versaoSelecionada.value = versao
             _livroCarregado.value = null
             _capituloSelecionado.value = null
             _nomeLivroParaCarregar.value = null
             _nomesLivrosDisponiveis.value = emptyList()
             viewModelScope.launch {
-                carregarBancoDeDadosParaTraducao(traducao.dbPath)
+                carregarBancoDeDadosParaVersao(versao.dbPath)
             }
         }
     }
@@ -116,10 +116,10 @@ class BibliaViewModel @Inject constructor(
     }
 
     /**
-     * Carrega o banco de dados para uma tradução específica.
+     * Carrega o banco de dados para uma versão específica.
      * @param dbFileName Nome do arquivo do banco de dados
      */
-    private suspend fun carregarBancoDeDadosParaTraducao(dbFileName: String) {
+    private suspend fun carregarBancoDeDadosParaVersao(dbFileName: String) {
         currentDatabase?.close()
         currentDatabase = null
         bibleDao = null
@@ -139,16 +139,16 @@ class BibliaViewModel @Inject constructor(
             currentDatabase = db
             bibleDao = db.bibleDao()
             Log.d("BibliaVM", "Banco de dados '$dbFileName' carregado com sucesso.")
-            carregarNomesDosLivrosDaTraducaoAtual()
+            carregarNomesDosLivrosDaVersaoAtual()
         } catch (e: Exception) {
             Log.e("BibliaVM", "Erro ao carregar DB $dbFileName: ${e.message}")
         }
     }
 
     /**
-     * Carrega os nomes dos livros da tradução atual.
+     * Carrega os nomes dos livros da versão atual.
      */
-    private fun carregarNomesDosLivrosDaTraducaoAtual() {
+    private fun carregarNomesDosLivrosDaVersaoAtual() {
         bibleDao?.let { dao ->
             viewModelScope.launch {
                 _nomesLivrosDisponiveis.value = emptyList()
@@ -235,28 +235,28 @@ class BibliaViewModel @Inject constructor(
 
     /**
      * Busca um versículo específico pelo seu ID.
-     * @param verseId ID do versículo no formato TRADUCAO_ABREV_LIVRO_CAPITULO_VERSICULO
+     * @param verseId ID do versículo no formato VERSAO_ABREV_LIVRO_CAPITULO_VERSICULO
      * @return Detalhes do versículo ou null se não encontrado
      */
     suspend fun getVerseById(verseId: String): VersiculoDetails? {
         Log.d("BibliaVM", "Buscando versículo com ID: $verseId")
         val parts = verseId.split("_")
         if (parts.size != 5) {
-            Log.e("BibliaVM", "Formato de verseId inválido. Esperado TRADUCAO_ABREV_LIVRO_CAPITULO_VERSICULO: $verseId")
+            Log.e("BibliaVM", "Formato de verseId inválido. Esperado VERSAO_ABREV_LIVRO_CAPITULO_VERSICULO: $verseId")
             return null
         }
 
-        val (tradAbbrev, bookAbbrev, capStr, verStr, verseIdInTrad) = parts
+        val (versaoAbbrev, bookAbbrev, capStr, verStr, verseIdInVersao) = parts
 
-        val dbPath = traducaoAbbrevToDbPath[tradAbbrev]
+        val dbPath = versaoAbbrevToDbPath[versaoAbbrev]
         if (dbPath == null) {
-            Log.e("BibliaVM", "Abreviação de tradução inválida no verseId: $tradAbbrev")
+            Log.e("BibliaVM", "Abreviação de versão inválida no verseId: $versaoAbbrev")
             return null
         }
 
-        if (_traducaoSelecionada.value.dbPath != dbPath) {
-            Log.d("BibliaVM", "Trocando para o banco de dados da tradução: $tradAbbrev")
-            carregarBancoDeDadosParaTraducao(dbPath)
+        if (_versaoSelecionada.value.dbPath != dbPath) {
+            Log.d("BibliaVM", "Trocando para o banco de dados da versão: $versaoAbbrev")
+            carregarBancoDeDadosParaVersao(dbPath)
             Log.d("BibliaVM", "Tentando prosseguir após carregar DB. Verificar se bibleDao está pronto.")
         }
 

@@ -203,7 +203,7 @@ class MusicaViewModel @Inject constructor(
         }
     }
 
-    fun getAlbumById(albumId: String): StateFlow<Pair<com.example.apparvoredavida.model.Album?, List<com.example.apparvoredavida.model.Music>>> {
+    fun getAlbumById(albumId: String): StateFlow<Pair<Album?, List<Music>>> {
         return _albuns.map { listaDeAlbuns ->
              val album = listaDeAlbuns.find { it.id == albumId }
              val musics = _albumMusicsMap.value[albumId] ?: emptyList()

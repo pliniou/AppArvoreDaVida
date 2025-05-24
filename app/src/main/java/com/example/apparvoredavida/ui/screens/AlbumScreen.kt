@@ -29,8 +29,8 @@ fun AlbumScreen(
 ) {
     val albumComMusicasState by musicaViewModel.getAlbumById(albumId).collectAsStateWithLifecycle()
     val isLoading = albumComMusicasState == null && albumId.isNotEmpty()
-    val albumData = albumComMusicasState?.first
-    val musicList = albumComMusicasState?.second ?: emptyList()
+    val albumData = albumComMusicasState.first
+    val musicList = albumComMusicasState.second
 
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(

@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import com.example.apparvoredavida.model.Partitura
-import com.example.apparvoredavida.data.repository.PartiturasRepository
+import com.example.apparvoredavida.data.repository.PartituraRepository
 import com.example.apparvoredavida.data.repository.FavoritesRepository
 
 /**
@@ -18,7 +18,7 @@ import com.example.apparvoredavida.data.repository.FavoritesRepository
  */
 @HiltViewModel
 class PartiturasViewModel @Inject constructor(
-    private val partiturasRepository: PartiturasRepository,
+    private val partiturasRepository: PartituraRepository,
     private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
     

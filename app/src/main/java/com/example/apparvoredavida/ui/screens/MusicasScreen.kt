@@ -115,7 +115,7 @@ private fun VisualizacaoToggle(
 ) {
     IconButton(onClick = onToggle) {
         Icon(
-            imageVector = if (visualizacao == VisualizacaoMusica.LISTA) Icons.Default.GridView else Icons.Default.List,
+            imageVector = if (visualizacao == VisualizacaoMusica.LISTA) Icons.Default.GridView else Icons.AutoMirrored.Filled.List,
             contentDescription = if (visualizacao == VisualizacaoMusica.LISTA) "Mudar para visualização em grade" else "Mudar para visualização em lista"
         )
     }

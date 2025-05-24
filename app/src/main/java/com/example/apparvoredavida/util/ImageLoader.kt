@@ -94,7 +94,7 @@ class ImageLoader @Inject constructor(
                 .build()
 
             when (val result = imageLoader.execute(request)) {
-                is SuccessResult -> result.drawable?.toBitmap()
+                is SuccessResult -> result.drawable.toBitmap()
                 else -> null
             }
         } catch (e: Exception) {

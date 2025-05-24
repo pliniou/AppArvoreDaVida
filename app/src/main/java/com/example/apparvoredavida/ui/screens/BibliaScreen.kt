@@ -46,7 +46,7 @@ fun BibleScreen(
 
     LaunchedEffect(livroCarregado, capituloSelecionado, book, chapter, verse) {
         if (book != null && chapter != null && verse != null) {
-            if (viewModel.traducaoSelecionada.value?.name == "ACF" && viewModel.livroCarregado.value?.nome == book) {
+            if (viewModel.traducaoSelecionada.value.name == "ACF" && viewModel.livroCarregado.value?.nome == book) {
                 val targetCapitulo = viewModel.livroCarregado.value?.capitulos?.find { it.numero == chapter }
                 if (targetCapitulo != null) {
                     if (viewModel.capituloSelecionado.value?.numero != chapter) {
@@ -70,12 +70,12 @@ fun BibleScreen(
                 }
                 if (nomesLivrosDisponiveis.isNotEmpty()) {
                     IconButton(onClick = { showLivrosSelector = true }) {
-                        Icon(Icons.Default.MenuBook, contentDescription = "Livros")
+                        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = "Livros")
                     }
                 }
                 if (livroCarregado != null) {
                     IconButton(onClick = { showCapitulosSelector = true }) {
-                        Icon(Icons.Default.List, contentDescription = "Capítulos")
+                        Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Capítulos")
                     }
                 }
             }

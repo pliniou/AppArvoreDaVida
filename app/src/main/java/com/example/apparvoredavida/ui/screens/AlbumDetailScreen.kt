@@ -106,7 +106,7 @@ private fun AlbumContent(
                 onMusicClick = onMusicClick,
                 onToggleFavorite = { favoritesViewModel.toggleFavoriteMusic(it) }
             )
-            Divider()
+            HorizontalDivider()
         }
     }
 } 

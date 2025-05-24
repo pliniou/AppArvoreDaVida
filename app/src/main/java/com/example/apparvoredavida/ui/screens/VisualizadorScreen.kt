@@ -152,7 +152,7 @@ private fun PdfViewer(
                 enabled = currentPage > 0
             ) {
                 Icon(
-                    imageVector = Icons.Default.NavigateBefore,
+                    imageVector = Icons.AutoMirrored.Filled.NavigateBefore,
                     contentDescription = "Página anterior",
                     tint = if (currentPage > 0) MaterialTheme.colorScheme.primary 
                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
@@ -169,7 +169,7 @@ private fun PdfViewer(
                 enabled = currentPage < totalPages - 1
             ) {
                 Icon(
-                    imageVector = Icons.Default.NavigateNext,
+                    imageVector = Icons.AutoMirrored.Filled.NavigateNext,
                     contentDescription = "Próxima página",
                     tint = if (currentPage < totalPages - 1) MaterialTheme.colorScheme.primary 
                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)

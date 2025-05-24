@@ -39,7 +39,6 @@ class MusicRepositoryImpl @Inject constructor(
 
             // Carrega a lista de arquivos MP3 das músicas
             val mp3Files = assetManager.listAssetFiles(Constants.DIR_MP3)
-                ?: throw AssetNotFoundException("Diretório de músicas não encontrado")
             
             // Carrega o arquivo de metadados das músicas
             val musicsMetadata = assetManager.readJsonAsset<List<Music>>("${Constants.DIR_MP3}/metadata.json")

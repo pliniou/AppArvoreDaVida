@@ -34,22 +34,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBibleDatabase(@ApplicationContext context: Context): BibleDatabase {
-        return Room.databaseBuilder(
-            context,
-            BibleDatabase::class.java,
-            "bible_database"
-        ).build()
-    }
-
-    @Provides
-    @Singleton
-    fun provideBibleDao(database: BibleDatabase): BibleDao {
-        return database.bibleDao()
-    }
-
-    @Provides
-    @Singleton
     fun providePdfLoader(@ApplicationContext context: Context): PdfLoader {
         return PdfLoader(context)
     }
@@ -68,8 +52,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideBibleRepository(bibleDao: BibleDao): BibleRepository {
-        return BibleRepositoryImpl(bibleDao)
+    fun provideBibleRepository(@ApplicationContext context: Context): BibleRepository {
+        return BibleRepositoryImpl(context)
     }
 
     @Provides

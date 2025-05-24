@@ -46,8 +46,8 @@ fun LinearProgress(
         contentAlignment = Alignment.Center
     ) {
         LinearProgressIndicator(
-            progress = progress,
-            modifier = Modifier.fillMaxSize()
+            progress = { progress },
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
@@ -73,8 +73,8 @@ fun ProgressWithText(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LinearProgressIndicator(
-                progress = progress,
-                modifier = Modifier.fillMaxSize()
+                progress = { progress },
+                modifier = Modifier.fillMaxSize(),
             )
             Text(
                 text = text,
