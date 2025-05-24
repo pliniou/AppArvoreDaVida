@@ -104,3 +104,82 @@ Outras tecnologias essenciais incluem ViewBinding para layouts XML existentes e 
 ## Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+# Visualizador de PDF
+
+Este módulo implementa um visualizador de PDF robusto e otimizado para a aplicação, seguindo as melhores práticas de desenvolvimento Android moderno.
+
+## Características
+
+- Renderização eficiente de PDFs usando PdfRenderer
+- Suporte a zoom e pan com gestos
+- Navegação entre páginas
+- Persistência de preferências do usuário (última página visualizada, nível de zoom)
+- Cache de páginas para melhor desempenho
+- Interface moderna com Material Design 3
+- Arquitetura MVVM com Jetpack Compose
+
+## Arquitetura
+
+O módulo segue a arquitetura MVVM e está organizado nas seguintes camadas:
+
+### UI (ui/)
+- `PdfViewerScreen`: Tela principal do visualizador
+- `PdfPageNavigator`: Componente reutilizável para navegação entre páginas
+
+### ViewModel (viewmodel/)
+- `PdfViewerViewModel`: Gerencia o estado da UI e a lógica de negócios
+
+### Repository (data/repository/)
+- `PdfRepository`: Gerencia o acesso aos PDFs e preferências do usuário
+
+### DataStore (data/datastore/)
+- `PdfPreferences`: Gerencia as preferências do usuário usando DataStore
+
+## Dependências
+
+- Jetpack Compose 2024.02.00
+- Material Design 3
+- Hilt 2.50
+- DataStore Preferences 1.0.0
+- Coroutines 1.7.3
+- Coil 2.5.0
+- PDFium Android 1.9.0
+
+## Uso
+
+Para abrir um PDF, navegue para a tela do visualizador passando o nome do arquivo:
+
+```kotlin
+navController.navigate(Screen.PdfViewer.createRoute("nome_do_arquivo.pdf"))
+```
+
+## Testes
+
+O módulo inclui testes unitários para o ViewModel usando:
+- JUnit 4
+- MockK
+- Coroutines Test
+- Turbine
+
+## Otimizações
+
+- Cache de configuração do Gradle habilitado
+- R8 full mode ativado
+- D8 desugaring habilitado
+- Build cache ativado
+- Jetifier desativado
+
+## Limitações
+
+- Suporte apenas para PDFs não criptografados
+- Tamanho máximo de página limitado pela memória do dispositivo
+- Zoom limitado entre 0.5x e 3x
+
+## Contribuição
+
+1. Faça o fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request

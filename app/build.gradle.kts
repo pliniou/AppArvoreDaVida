@@ -35,6 +35,10 @@ android {
         }
     }
 
+    aaptOptions {
+        noCompress("pdf")
+    }
+
     buildFeatures {
         compose = true
         viewBinding = true
@@ -98,6 +102,7 @@ dependencies {
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.2")
     
     // Testing
     testImplementation(libs.junit)
@@ -113,6 +118,10 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
+    
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences-core:1.0.0")
     
     // Gson
     implementation(libs.gson)

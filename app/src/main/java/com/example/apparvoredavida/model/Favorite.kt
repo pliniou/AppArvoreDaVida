@@ -1,37 +1,40 @@
 package com.example.apparvoredavida.model
 
-sealed class Favorite {
+sealed class Favorite(open val id: String, open val title: String) {
     data class Music(
-        val id: String,
-        val title: String,
+        override val id: String,
+        override val title: String,
         val artist: String?,
         val path: String,
+        val album: String? = null,
+        val coverPath: String? = null,
         val timestamp: Long = System.currentTimeMillis()
-    ) : Favorite()
+    ) : Favorite(id, title)
 
     data class Verse(
-        val id: String,
+        override val id: String,
+        override val title: String,
         val book: String,
         val chapter: Int,
         val verse: Int,
         val text: String,
         val translation: String,
         val timestamp: Long = System.currentTimeMillis()
-    ) : Favorite()
+    ) : Favorite(id, title)
 
     data class Hymn(
-        val id: String,
+        override val id: String,
+        override val title: String,
         val number: Int,
-        val title: String,
         val author: String?,
         val lyrics: String?,
         val timestamp: Long = System.currentTimeMillis()
-    ) : Favorite()
+    ) : Favorite(id, title)
 
     data class Score(
-        val id: String,
-        val title: String,
+        override val id: String,
+        override val title: String,
         val path: String,
         val timestamp: Long = System.currentTimeMillis()
-    ) : Favorite()
+    ) : Favorite(id, title)
 } 

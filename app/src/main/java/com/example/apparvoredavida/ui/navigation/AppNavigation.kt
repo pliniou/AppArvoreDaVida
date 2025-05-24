@@ -23,6 +23,9 @@ sealed class Screen(val route: String) {
     object Viewer : Screen("${Constants.ROUTE_VIEWER}/{fileId}/{fileType}")
     object Album : Screen("${Constants.ROUTE_ALBUM}/{albumId}")
     object AlbumDetail : Screen("album_detail/{albumId}")
+    object PdfViewer : Screen("pdf_viewer/{pdfName}") {
+        fun createRoute(pdfName: String) = "pdf_viewer/$pdfName"
+    }
 
     fun createRoute(vararg args: String): String {
         return buildString {
@@ -134,6 +137,21 @@ fun AppNavigation(
             AlbumDetailScreen(
                 navController = navController,
                 albumId = backStackEntry.arguments?.getString("albumId") ?: ""
+            )
+        }
+
+        composable(
+            route = Screen.PdfViewer.route,
+            arguments = listOf(
+                navArgument("pdfName") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+            val pdfName = backStackEntry.arguments?.getString("pdfName") ?: return@composable
+            PdfViewerScreen(
+                pdfName = pdfName,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }
