@@ -1,9 +1,11 @@
 package com.example.apparvoredavida.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
+/**
+ * Classe que representa um versículo da Bíblia.
+ * @param numero Número do versículo
+ * @param texto Texto do versículo
+ */
 data class Versiculo(
-    val numero: Int, // Ou String, dependendo do seu JSON
+    val numero: Int,
     val texto: String
 ) 

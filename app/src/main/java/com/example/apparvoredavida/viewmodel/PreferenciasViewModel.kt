@@ -23,11 +23,17 @@ import kotlinx.coroutines.flow.first
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.example.apparvoredavida.data.repository.PreferencesRepository
 
+/**
+ * ViewModel responsável por gerenciar as preferências do usuário.
+ * Implementa configurações de tema, tamanho de fonte e outras preferências.
+ */
 @HiltViewModel
 class PreferenciasViewModel @Inject constructor(
     application: Application,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val preferencesRepository: PreferencesRepository
 ) : AndroidViewModel(application) {
 
     private val context = getApplication<Application>().applicationContext
@@ -46,9 +52,18 @@ class PreferenciasViewModel @Inject constructor(
     private val _fontesDisponiveis = MutableStateFlow<List<String>>(emptyList())
     val fontesDisponiveis: StateFlow<List<String>> = _fontesDisponiveis.asStateFlow()
 
+    private val _isDarkMode = MutableStateFlow(false)
+    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+
+    private val _fontSize = MutableStateFlow(TamanhoFonte.MEDIO)
+    val fontSize: StateFlow<TamanhoFonte> = _fontSize.asStateFlow()
+
     init {
         restaurarPreferencias()
         listarFontes()
+        viewModelScope.launch {
+            loadPreferences()
+        }
     }
 
     // Função para salvar todas as preferências
@@ -114,6 +129,48 @@ class PreferenciasViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.e("PreferenciasVM", "Erro ao listar fontes: ${e.message}")
                 _fontesDisponiveis.value = listOf("default") // Manter apenas a opção default em caso de erro
+            }
+        }
+    }
+
+    /**
+     * Carrega as preferências do usuário do DataStore.
+     */
+    private suspend fun loadPreferences() {
+        try {
+            _isDarkMode.value = preferencesRepository.getDarkMode()
+            _fontSize.value = preferencesRepository.getFontSize()
+        } catch (e: Exception) {
+            // TODO: Implementar tratamento de erro adequado
+        }
+    }
+
+    /**
+     * Alterna o modo escuro.
+     */
+    fun toggleDarkMode() {
+        viewModelScope.launch {
+            try {
+                val newValue = !_isDarkMode.value
+                preferencesRepository.setDarkMode(newValue)
+                _isDarkMode.value = newValue
+            } catch (e: Exception) {
+                // TODO: Implementar tratamento de erro adequado
+            }
+        }
+    }
+
+    /**
+     * Define o tamanho da fonte.
+     * @param size Novo tamanho de fonte
+     */
+    fun setFontSize(size: TamanhoFonte) {
+        viewModelScope.launch {
+            try {
+                preferencesRepository.setFontSize(size)
+                _fontSize.value = size
+            } catch (e: Exception) {
+                // TODO: Implementar tratamento de erro adequado
             }
         }
     }

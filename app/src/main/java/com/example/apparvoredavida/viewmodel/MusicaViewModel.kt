@@ -28,16 +28,23 @@ import androidx.media3.common.Player
 import androidx.media3.common.MediaItem
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import com.example.apparvoredavida.data.repository.MusicRepository
+import com.example.apparvoredavida.data.repository.FavoritesRepository
 
-// Dados de música e álbum
-
-enum class VisualizacaoMusica {
-    GRID, LISTA
-}
-
-class MusicaViewModel(application: Application) : AndroidViewModel(application) {
-    private val musicLoader = MusicLoader(application)
-    private val metadataCache = MusicMetadataCache(application)
+/**
+ * ViewModel responsável por gerenciar a funcionalidade de músicas.
+ * Implementa carregamento, reprodução e gerenciamento de favoritos.
+ */
+@HiltViewModel
+class MusicaViewModel @Inject constructor(
+    private val musicRepository: MusicRepository,
+    private val favoritesRepository: FavoritesRepository
+) : ViewModel() {
+    private val musicLoader = MusicLoader(getApplication())
+    private val metadataCache = MusicMetadataCache(getApplication())
     
     private val _albuns = MutableStateFlow<List<Album>>(emptyList())
     val albuns: StateFlow<List<Album>> = _albuns.asStateFlow()
@@ -69,8 +76,15 @@ class MusicaViewModel(application: Application) : AndroidViewModel(application) 
     private var updatePositionJob: Job? = null
     // ------------------------------------
 
+    private val _musics = MutableStateFlow<List<Music>>(emptyList())
+    val musics: StateFlow<List<Music>> = _musics.asStateFlow()
+
+    private val _favorites = MutableStateFlow<Set<String>>(emptySet())
+    val favorites: StateFlow<Set<String>> = _favorites.asStateFlow()
+
     init {
         loadMusics()
+        loadFavorites()
         // Observar o estado do player no musicLoader e atualizar os StateFlows
         musicLoader.setPlayerEventListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -92,6 +106,56 @@ class MusicaViewModel(application: Application) : AndroidViewModel(application) 
                  _duration.value = 0L // Reset duration on track change, will be updated in STATE_READY
              }
         })
+    }
+
+    /**
+     * Carrega a lista de músicas disponíveis.
+     */
+    private suspend fun loadMusics() {
+        try {
+            _musics.value = musicRepository.getAllMusics()
+        } catch (e: Exception) {
+            // TODO: Implementar tratamento de erro adequado
+        }
+    }
+
+    /**
+     * Carrega a lista de músicas favoritas.
+     */
+    private suspend fun loadFavorites() {
+        try {
+            _favorites.value = favoritesRepository.getFavoriteMusics()
+        } catch (e: Exception) {
+            // TODO: Implementar tratamento de erro adequado
+        }
+    }
+
+    /**
+     * Alterna o status de favorito de uma música.
+     * @param musicId ID da música
+     */
+    fun toggleFavorite(musicId: String) {
+        viewModelScope.launch {
+            try {
+                if (_favorites.value.contains(musicId)) {
+                    favoritesRepository.removeFavoriteMusic(musicId)
+                } else {
+                    favoritesRepository.addFavoriteMusic(musicId)
+                }
+                loadFavorites()
+            } catch (e: Exception) {
+                // TODO: Implementar tratamento de erro adequado
+            }
+        }
+    }
+
+    /**
+     * Verifica se uma música está nos favoritos.
+     * @param musicId ID da música
+     * @return true se a música está nos favoritos, false caso contrário
+     */
+    fun isFavorite(musicId: String): Boolean {
+        return _favorites.value.contains(musicId)
     }
 
     private fun loadMusics() {

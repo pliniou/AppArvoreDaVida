@@ -1,11 +1,13 @@
 package com.example.apparvoredavida.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
+/**
+ * Classe que representa um livro da Bíblia.
+ * @param nome Nome do livro
+ * @param abreviacao Abreviação do livro (ex: "Gn")
+ * @param capitulos Lista de capítulos do livro
+ */
 data class Livro(
-    val nome: String, // Ex: "Gênesis"
-    val abreviacao: String? = null, // Ex: "Gn" (Pode não estar em todos os JSONs, tornar opcional)
+    val nome: String,
+    val abreviacao: String? = null,
     val capitulos: List<Capitulo>
-    // Adicione outros campos do livro se existirem no JSON, como "testamento"
 )

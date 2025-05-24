@@ -9,21 +9,18 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.apparvoredavida.ui.navigation.AppNavigation
-import com.example.apparvoredavida.ui.theme.AppArvoreDaVidaTheme
-import com.example.apparvoredavida.util.AssetManager
-import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.compose.foundation.isSystemInDarkTheme
-import com.example.apparvoredavida.data.PreferenciasDataClass
-import com.example.apparvoredavida.util.TamanhoFonte
+import com.example.apparvoredavida.ui.navigation.AppNavigation
+import com.example.apparvoredavida.ui.theme.AppTheme
+import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -32,23 +29,28 @@ class MainActivity : ComponentActivity() {
         
         enableEdgeToEdge()
         setContent {
-            val preferenciasViewModel: PreferenciasViewModel = hiltViewModel()
-            
-            val preferenciasState by preferenciasViewModel.preferencias.collectAsStateWithLifecycle()
-            
-            val useDarkTheme = when (preferenciasState.tema) {
-                com.example.apparvoredavida.model.TemaApp.ESCURO -> true
-                com.example.apparvoredavida.model.TemaApp.CLARO -> false
-                com.example.apparvoredavida.model.TemaApp.SISTEMA -> isSystemInDarkTheme()
-            }
+            MainScreen()
+        }
+    }
+}
 
-            AppArvoreDaVidaTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavigation()
-                }
+@Composable
+fun MainScreen() {
+    val preferenciasViewModel: PreferenciasViewModel = hiltViewModel()
+    val navController = rememberNavController()
+    
+    AppTheme(viewModel = preferenciasViewModel) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                AppNavigation(
+                    navController = navController,
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
         }
     }

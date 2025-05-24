@@ -1,20 +1,11 @@
 package com.example.apparvoredavida.ui.screens
 
 import android.graphics.BitmapFactory
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -29,26 +20,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.apparvoredavida.ui.components.AppTopBar
-import com.example.apparvoredavida.ui.components.AppCard
-import com.example.apparvoredavida.util.AssetManager
 import com.example.apparvoredavida.util.Constants
-import java.io.File
 import com.example.apparvoredavida.model.Album
 import com.example.apparvoredavida.model.Music
-import com.example.apparvoredavida.model.Favorite
 import com.example.apparvoredavida.viewmodel.FavoritesViewModel
 import com.example.apparvoredavida.ui.components.LoadingOverlay
 import com.example.apparvoredavida.viewmodel.MusicaViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.apparvoredavida.viewmodel.VisualizacaoMusica
-import com.example.apparvoredavida.ui.screens.ReprodutorScreen
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.items
 import com.example.apparvoredavida.ui.navigation.Screen
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MusicasScreen(navController: NavController = rememberNavController()) {
     val context = LocalContext.current
@@ -68,88 +53,133 @@ fun MusicasScreen(navController: NavController = rememberNavController()) {
                 title = "Músicas",
                 onBackClick = { navController.navigateUp() },
                 actions = {
-                    TextField(
-                        value = searchText,
-                        onValueChange = { searchText = it },
-                        label = { Text("Buscar") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .width(200.dp)
+                    SearchBar(
+                        searchText = searchText,
+                        onSearchTextChange = { searchText = it }
                     )
-
-                    IconButton(onClick = { musicaViewModel.toggleVisualizacao() }) {
-                        Icon(
-                            imageVector = if (visualizacao == VisualizacaoMusica.LISTA) Icons.Default.GridView else Icons.Default.List,
-                            contentDescription = if (visualizacao == VisualizacaoMusica.LISTA) "Mudar para visualização em grade" else "Mudar para visualização em lista"
-                        )
-                    }
+                    VisualizacaoToggle(
+                        visualizacao = visualizacao,
+                        onToggle = { musicaViewModel.toggleVisualizacao() }
+                    )
                 }
             )
 
             val filteredAlbuns = remember(albuns, searchText) {
-                if (searchText.isBlank()) {
-                    albuns.map { album ->
-                        album
-                    }
-                } else {
-                    albuns.filter { album ->
-                        album.title.contains(searchText, ignoreCase = true)
-                    }
+                if (searchText.isBlank()) albuns else albuns.filter { 
+                    it.title.contains(searchText, ignoreCase = true) 
                 }
             }
 
             when (visualizacao) {
-                VisualizacaoMusica.LISTA -> {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(filteredAlbuns) { album ->
-                            AlbumCard(
-                                album = album,
-                                isExpanded = albumExpandido == album.id,
-                                onExpandClick = { musicaViewModel.expandirAlbum(album.id) },
-                                onMusicClick = { musica ->
-                                    musicaViewModel.selecionarMusica(musica)
-                                    navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
-                                },
-                                onFavoriteClick = { musica ->
-                                    favoritosViewModel.toggleFavoriteMusic(musica)
-                                },
-                                isFavorite = { musica ->
-                                    favoritosViewModel.isMusicFavoriteFlow(musica.id).collectAsState(initial = false).value
-                                },
-                                musics = if (albumExpandido == album.id) {
-                                    musicaViewModel.getAlbumById(album.id).collectAsStateWithLifecycle().value.second
-                                } else {
-                                    emptyList()
-                                }
-                            )
-                        }
-                    }
-                }
-                VisualizacaoMusica.GRID -> {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = 180.dp),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        contentPadding = PaddingValues(8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(filteredAlbuns) { album ->
-                            AlbumGridItem(
-                                album = album,
-                                navController = navController
-                            )
-                        }
-                    }
-                }
+                VisualizacaoMusica.LISTA -> ListaAlbuns(
+                    albuns = filteredAlbuns,
+                    albumExpandido = albumExpandido,
+                    onExpandClick = { musicaViewModel.expandirAlbum(it) },
+                    onMusicClick = { musica ->
+                        musicaViewModel.selecionarMusica(musica)
+                        navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
+                    },
+                    onFavoriteClick = { favoritosViewModel.toggleFavoriteMusic(it) },
+                    favoritosViewModel = favoritosViewModel,
+                    musicaViewModel = musicaViewModel
+                )
+                VisualizacaoMusica.GRID -> GridAlbuns(
+                    albuns = filteredAlbuns,
+                    navController = navController
+                )
             }
+        }
+    }
+}
+
+@Composable
+private fun SearchBar(
+    searchText: String,
+    onSearchTextChange: (String) -> Unit
+) {
+    TextField(
+        value = searchText,
+        onValueChange = onSearchTextChange,
+        label = { Text("Buscar") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+        modifier = Modifier
+            .padding(end = 8.dp)
+            .width(200.dp)
+    )
+}
+
+@Composable
+private fun VisualizacaoToggle(
+    visualizacao: VisualizacaoMusica,
+    onToggle: () -> Unit
+) {
+    IconButton(onClick = onToggle) {
+        Icon(
+            imageVector = if (visualizacao == VisualizacaoMusica.LISTA) Icons.Default.GridView else Icons.Default.List,
+            contentDescription = if (visualizacao == VisualizacaoMusica.LISTA) "Mudar para visualização em grade" else "Mudar para visualização em lista"
+        )
+    }
+}
+
+@Composable
+private fun ListaAlbuns(
+    albuns: List<Album>,
+    albumExpandido: String?,
+    onExpandClick: (String) -> Unit,
+    onMusicClick: (Music) -> Unit,
+    onFavoriteClick: (Music) -> Unit,
+    favoritosViewModel: FavoritesViewModel,
+    musicaViewModel: MusicaViewModel
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(albuns) { album ->
+            val musicasFavoritas = album.musics.associate { musica ->
+                musica.id to favoritosViewModel.isMusicFavoriteFlow(musica.id)
+                    .collectAsStateWithLifecycle(initialValue = false)
+                    .value
+            }
+            
+            AlbumCard(
+                album = album,
+                isExpanded = albumExpandido == album.id,
+                onExpandClick = { onExpandClick(album.id) },
+                onMusicClick = onMusicClick,
+                onFavoriteClick = onFavoriteClick,
+                musicasFavoritas = musicasFavoritas,
+                musics = if (albumExpandido == album.id) {
+                    musicaViewModel.getAlbumById(album.id).collectAsStateWithLifecycle().value.second
+                } else {
+                    emptyList()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun GridAlbuns(
+    albuns: List<Album>,
+    navController: NavController
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 180.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(albuns) { album ->
+            AlbumGridItem(
+                album = album,
+                navController = navController
+            )
         }
     }
 }
@@ -161,7 +191,7 @@ private fun AlbumCard(
     onExpandClick: () -> Unit,
     onMusicClick: (Music) -> Unit,
     onFavoriteClick: (Music) -> Unit,
-    isFavorite: (Music) -> Boolean,
+    musicasFavoritas: Map<String, Boolean>,
     musics: List<Music>
 ) {
     Card(
@@ -197,8 +227,8 @@ private fun AlbumCard(
                         MusicListItem(
                             music = music,
                             onMusicClick = onMusicClick,
-                            onFavoriteClick = { favoritosViewModel.toggleFavoriteMusic(music) },
-                            isFavorite = favoritosViewModel.isMusicFavoriteFlow(music.id).collectAsState(initial = false).value
+                            onFavoriteClick = onFavoriteClick,
+                            isFavorite = musicasFavoritas[music.id] ?: false
                         )
                     }
                 }

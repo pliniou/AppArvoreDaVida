@@ -6,12 +6,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -19,29 +17,12 @@ import androidx.navigation.NavController
 import com.example.apparvoredavida.model.FavoriteDisplayItem
 import com.example.apparvoredavida.viewmodel.FavoritesViewModel
 import com.example.apparvoredavida.util.Constants
-import com.example.apparvoredavida.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(navController: NavController) {
-    val context = LocalContext.current
     val viewModel: FavoritesViewModel = hiltViewModel()
-    
     val favoriteItems by viewModel.allFavoriteItems.collectAsStateWithLifecycle()
-    
-    val onItemClick: (FavoriteDisplayItem) -> Unit = { item ->
-        when (item) {
-            is FavoriteDisplayItem.MusicItem -> { navController.navigate("${Constants.ROUTE_PLAYER}/${item.id}") }
-            is FavoriteDisplayItem.VerseItem -> {
-                val verseDetails = item.details
-                navController.navigate(
-                    "biblia_screen/${verseDetails.traducaoAbrev}/${verseDetails.livroAbrev}/${verseDetails.capituloNumero}/${verseDetails.versiculoNumero}"
-                )
-            }
-            is FavoriteDisplayItem.HymnItem -> { navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf") }
-            is FavoriteDisplayItem.ScoreItem -> { navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf") }
-        }
-    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(
@@ -51,59 +32,122 @@ fun FavoritesScreen(navController: NavController) {
         )
 
         if (favoriteItems.isEmpty()) {
-            Text(
-                text = "Nenhum item favoritado ainda.",
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(16.dp)
-            )
+            EmptyFavoritesContent()
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(favoriteItems, key = { it.id }) { item ->
-                    ListItem(
-                        headlineContent = { Text(item.title) },
-                        supportingContent = {
-                            Column {
-                                Text("Tipo: ${item::class.simpleName}", style = MaterialTheme.typography.bodySmall)
-                                when (item) {
-                                    is FavoriteDisplayItem.MusicItem -> {
-                                        item.musicObject.artist?.let { artist ->
-                                            Text("Artista: $artist", style = MaterialTheme.typography.bodySmall)
-                                        }
-                                    }
-                                    is FavoriteDisplayItem.VerseItem -> {
-                                        Text("Referência: ${item.reference}", style = MaterialTheme.typography.bodySmall)
-                                        Text("${item.verseObject.verseNumber}. ${item.verseObject.text}", style = MaterialTheme.typography.bodySmall)
-                                    }
-                                    is FavoriteDisplayItem.HymnItem -> {
-                                        // Add any specific hymn info if available in HymnInfo
-                                    }
-                                    is FavoriteDisplayItem.ScoreItem -> {
-                                         // Add any specific score info if available in ScoreInfo
-                                    }
-                                }
-                            }
-                        },
-                        trailingContent = {
-                             IconButton(onClick = {
-                                when (item) {
-                                    is FavoriteDisplayItem.MusicItem -> viewModel.toggleFavoriteMusic(item.musicObject)
-                                    is FavoriteDisplayItem.VerseItem -> viewModel.toggleFavoriteVerse(item.id)
-                                    is FavoriteDisplayItem.HymnItem -> viewModel.toggleFavoriteHymn(item.id)
-                                    is FavoriteDisplayItem.ScoreItem -> viewModel.toggleFavoriteScore(item.id)
-                                }
-                            }) {
-                                Icon(Icons.Filled.Favorite, contentDescription = "Remover dos favoritos")
-                            }
-                        },
-                        modifier = Modifier.clickable { onItemClick(item) }
-                    )
+            FavoritesList(
+                items = favoriteItems,
+                onItemClick = { item -> handleItemClick(item, navController) },
+                onToggleFavorite = { item -> handleToggleFavorite(item, viewModel) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmptyFavoritesContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "Nenhum item favoritado ainda.",
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Composable
+private fun FavoritesList(
+    items: List<FavoriteDisplayItem>,
+    onItemClick: (FavoriteDisplayItem) -> Unit,
+    onToggleFavorite: (FavoriteDisplayItem) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(items, key = { it.id }) { item ->
+            FavoriteItem(
+                item = item,
+                onClick = { onItemClick(item) },
+                onToggleFavorite = { onToggleFavorite(item) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun FavoriteItem(
+    item: FavoriteDisplayItem,
+    onClick: () -> Unit,
+    onToggleFavorite: () -> Unit
+) {
+    ListItem(
+        headlineContent = { Text(item.title) },
+        supportingContent = {
+            Column {
+                Text("Tipo: ${item::class.simpleName}", style = MaterialTheme.typography.bodySmall)
+                when (item) {
+                    is FavoriteDisplayItem.MusicItem -> {
+                        item.musicObject.artist?.let { artist ->
+                            Text("Artista: $artist", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    is FavoriteDisplayItem.VerseItem -> {
+                        Text("Referência: ${item.reference}", style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            "${item.verseObject.versiculoNumero}. ${item.verseObject.texto}",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    is FavoriteDisplayItem.HymnItem -> {
+                        // Informações específicas de hino, se disponíveis
+                    }
+                    is FavoriteDisplayItem.ScoreItem -> {
+                        // Informações específicas de partitura, se disponíveis
+                    }
                 }
             }
+        },
+        trailingContent = {
+            IconButton(onClick = onToggleFavorite) {
+                Icon(Icons.Filled.Favorite, contentDescription = "Remover dos favoritos")
+            }
+        },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
+}
+
+private fun handleItemClick(item: FavoriteDisplayItem, navController: NavController) {
+    when (item) {
+        is FavoriteDisplayItem.MusicItem -> {
+            navController.navigate("${Constants.ROUTE_PLAYER}/${item.id}")
         }
+        is FavoriteDisplayItem.VerseItem -> {
+            val verseDetails = item.verseObject
+            val parts = verseDetails.id.split("_")
+            if (parts.size == 5) {
+                val (traducaoAbrev, livroAbrev, capitulo, versiculo, _) = parts
+                navController.navigate(
+                    "biblia_screen/$traducaoAbrev/$livroAbrev/$capitulo/$versiculo"
+                )
+            }
+        }
+        is FavoriteDisplayItem.HymnItem -> {
+            navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf")
+        }
+        is FavoriteDisplayItem.ScoreItem -> {
+            navController.navigate("${Constants.ROUTE_VIEWER}/${item.id}/pdf")
+        }
+    }
+}
+
+private fun handleToggleFavorite(item: FavoriteDisplayItem, viewModel: FavoritesViewModel) {
+    when (item) {
+        is FavoriteDisplayItem.MusicItem -> viewModel.toggleFavoriteMusic(item.musicObject)
+        is FavoriteDisplayItem.VerseItem -> viewModel.toggleFavoriteVerse(item.id)
+        is FavoriteDisplayItem.HymnItem -> viewModel.toggleFavoriteHymn(item.id)
+        is FavoriteDisplayItem.ScoreItem -> viewModel.toggleFavoriteScore(item.id)
     }
 } 

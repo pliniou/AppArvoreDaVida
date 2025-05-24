@@ -92,11 +92,11 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     
+    // PDF Renderer
+    implementation("androidx.pdf:pdf-renderer:2.0.0")
+    
     // Serialization
     implementation(libs.kotlinx.serialization.json)
-    
-    // PDF Viewer (PdfRendererView)
-    implementation("com.github.jidogoon:PdfRendererView:v1.0.6")
     
     // Testing
     testImplementation(libs.junit)

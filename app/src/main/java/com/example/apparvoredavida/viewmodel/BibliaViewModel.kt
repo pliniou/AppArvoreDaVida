@@ -1,66 +1,49 @@
 package com.example.apparvoredavida.viewmodel
 
 import android.app.Application
-import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.apparvoredavida.model.BibleTranslation
-import com.example.apparvoredavida.model.Livro
-import com.example.apparvoredavida.model.Capitulo
-import com.example.apparvoredavida.model.Versiculo
-import com.example.apparvoredavida.model.VersiculoDetails
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.example.apparvoredavida.model.*
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import android.util.Log
-import kotlinx.serialization.decodeFromString
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import com.example.apparvoredavida.data.bible.*
+import androidx.room.Room
 
-import com.example.apparvoredavida.data.bible.BibleDatabase // Importar o banco de dados
-import com.example.apparvoredavida.data.bible.dao.BibleDao // Importar o DAO
-import androidx.room.Room // Importar Room explicitamente
-import kotlinx.coroutines.flow.first // Importar first para Flow
-import com.example.apparvoredavida.data.bible.entity.VerseEntity // Importar VerseEntity
-import com.example.apparvoredavida.data.bible.entity.BookEntity // Importar BookEntity para o mapa
-
+/**
+ * ViewModel responsável por gerenciar a funcionalidade da Bíblia.
+ * Implementa acesso ao banco de dados SQLite e gerenciamento de traduções.
+ */
 @HiltViewModel
 class BibliaViewModel @Inject constructor(
     application: Application,
-    private val dataStore: DataStore<Preferences> // Injetar DataStore
-    // O BibleDatabase e BibleDao serão gerenciados DENTRO do ViewModel dinamicamente
+    private val dataStore: DataStore<Preferences>
 ) : AndroidViewModel(application) {
 
-    private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
+    private var currentDatabase: BibleDatabase? = null
+    private var bibleDao: BibleDao? = null
 
-    private var currentDatabase: BibleDatabase? = null // Referência para a instância do banco de dados ativo
-    private var bibleDao: BibleDao? = null // Referência para o DAO ativo
-
-    // Traduções disponíveis (manter por enquanto, pode ser carregado do DB metadata depois)
+    // Traduções disponíveis
     val traducoesDisponiveis: List<BibleTranslation> = listOf(
-        BibleTranslation("Almeida Corrigida Fiel", "ACF.json"),
-        BibleTranslation("Almeida Revista e Atualizada", "ARA.json"),
-        BibleTranslation("Almeida Revista e Corrigida", "ARC.json"),
-        BibleTranslation("Nova Almeida Atualizada", "NAA.json"),
-        BibleTranslation("Nova Bíblia Viva", "NBV.json"),
-        BibleTranslation("Nova Tradução na Linguagem de Hoje", "NTLH.json")
+        BibleTranslation("Almeida Corrigida Fiel", "ACF.sqlite"),
+        BibleTranslation("Almeida Revista e Atualizada", "ARA.sqlite"),
+        BibleTranslation("Almeida Revista e Corrigida", "ARC.sqlite"),
+        BibleTranslation("Nova Almeida Atualizada", "NAA.sqlite"),
+        BibleTranslation("Nova Bíblia Viva", "NBV.sqlite"),
+        BibleTranslation("Nova Tradução na Linguagem de Hoje", "NTLH.sqlite")
     )
 
-    // Mapa de abreviações de tradução para jsonPath
-    private val traducaoAbbrevToJsonPath = traducoesDisponiveis.associate { traducao ->
-        // Assumindo que a abreviação é a parte antes do ".json"
-        traducao.jsonPath.replace(".json", "") to traducao.jsonPath
+    private val traducaoAbbrevToDbPath = traducoesDisponiveis.associate { traducao ->
+        traducao.dbPath.replace(".sqlite", "") to traducao.dbPath
     }
 
-    // Mapa de abreviações de livro no verseId para book_reference_id
-    // Este mapa DEVE corresponder aos book_reference_id usados no banco de dados SQLite
+    // Mapa de abreviações de livro
     private val bookAbbrevToRefId = mapOf(
         "GN" to 1, "ÊX" to 2, "LV" to 3, "NM" to 4, "DT" to 5, "JS" to 6, "JZ" to 7, "RT" to 8,
         "1SM" to 9, "2SM" to 10, "1RS" to 11, "2RS" to 12, "1CR" to 13, "2CR" to 14, "ED" to 15,
@@ -77,156 +60,140 @@ class BibliaViewModel @Inject constructor(
     private val _traducaoSelecionada = MutableStateFlow(traducoesDisponiveis.first())
     val traducaoSelecionada: StateFlow<BibleTranslation> = _traducaoSelecionada.asStateFlow()
 
-    // Nomes dos livros da tradução atualmente selecionada (para o seletor de livros)
     private val _nomesLivrosDisponiveis = MutableStateFlow<List<String>>(emptyList())
     val nomesLivrosDisponiveis: StateFlow<List<String>> = _nomesLivrosDisponiveis.asStateFlow()
 
-    // O Livro atualmente carregado e selecionado (pode precisar ser adaptado/substituído)
     private val _livroCarregado = MutableStateFlow<Livro?>(null)
     val livroCarregado: StateFlow<Livro?> = _livroCarregado.asStateFlow()
 
-    // O capítulo selecionado do livro carregado (pode precisar ser adaptado/substituído)
     private val _capituloSelecionado = MutableStateFlow<Capitulo?>(null)
     val capituloSelecionado: StateFlow<Capitulo?> = _capituloSelecionado.asStateFlow()
 
-    // Para guardar o nome do livro que o usuário quer carregar
     private val _nomeLivroParaCarregar = MutableStateFlow<String?>(null)
 
-
     init {
-        // Carregar nomes dos livros da tradução padrão ao iniciar
-        // Esta chamada precisará ser modificada para usar o DB após ele ser carregado
-        // TODO: Remover lógica de carregamento de JSON comentada (feito implicitamente, não há código JSON comentado)
-        // Carregar a tradução padrão ao iniciar o ViewModel
         viewModelScope.launch {
-             carregarBancoDeDadosParaTraducao(_traducaoSelecionada.value.jsonPath) // jsonPath contém o nome do arquivo .sqlite
+            carregarBancoDeDadosParaTraducao(_traducaoSelecionada.value.dbPath)
         }
     }
 
+    /**
+     * Seleciona uma tradução da Bíblia e carrega seu banco de dados.
+     * @param traducao Tradução a ser selecionada
+     */
     fun selecionarTraducao(traducao: BibleTranslation) {
-        if (_traducaoSelecionada.value.jsonPath != traducao.jsonPath) {
+        if (_traducaoSelecionada.value.dbPath != traducao.dbPath) {
             _traducaoSelecionada.value = traducao
             _livroCarregado.value = null
             _capituloSelecionado.value = null
             _nomeLivroParaCarregar.value = null
-            _nomesLivrosDisponiveis.value = emptyList() // Limpar antes de carregar novos
-            // Chamar função para carregar o novo banco de dados
+            _nomesLivrosDisponiveis.value = emptyList()
             viewModelScope.launch {
-                carregarBancoDeDadosParaTraducao(traducao.jsonPath) // jsonPath contém o nome do arquivo .sqlite
+                carregarBancoDeDadosParaTraducao(traducao.dbPath)
             }
         }
     }
 
-    // Chamado pela UI quando um nome de livro é escolhido no seletor
+    /**
+     * Define o livro a ser carregado.
+     * @param nomeLivro Nome do livro a ser carregado
+     */
     fun definirNomeLivroParaCarregar(nomeLivro: String) {
         _nomeLivroParaCarregar.value = nomeLivro
-        _livroCarregado.value = null // Indicar que um novo livro será carregado
+        _livroCarregado.value = null
         _capituloSelecionado.value = null
-        // Chamar função para carregar o livro do DB
         viewModelScope.launch {
-             carregarLivroEspecifico()
+            carregarLivroEspecifico()
         }
     }
 
+    /**
+     * Seleciona um capítulo específico.
+     * @param capitulo Capítulo a ser selecionado
+     */
     fun selecionarCapitulo(capitulo: Capitulo?) {
         _capituloSelecionado.value = capitulo
     }
 
-    // Função para carregar/mudar a instância do banco de dados
+    /**
+     * Carrega o banco de dados para uma tradução específica.
+     * @param dbFileName Nome do arquivo do banco de dados
+     */
     private suspend fun carregarBancoDeDadosParaTraducao(dbFileName: String) {
-        // Fechar banco de dados anterior se existir
         currentDatabase?.close()
         currentDatabase = null
         bibleDao = null
 
-        // Construir o novo banco de dados. Assume que o arquivo .sqlite está em assets/databases/
-        // O nome do arquivo jsonPath (ex: "ARA.json") precisa ser adaptado para o nome do arquivo sqlite (ex: "ARA.sqlite")
-        val sqliteFileName = dbFileName.replace(".json", ".sqlite")
-        val databasePathInAssets = "databases/$sqliteFileName" // Assumindo que os arquivos .sqlite estão em assets/databases/
+        val databasePathInAssets = "databases/$dbFileName"
 
         try {
-             val db = withContext(Dispatchers.IO) {
-                 Room.databaseBuilder(
-                     getApplication<Application>().applicationContext,
-                     BibleDatabase::class.java,
-                     sqliteFileName // O nome do arquivo no sistema de arquivos do dispositivo
-                 )
-                // Se for a primeira vez que o app acessa este DB, ele copiará de assets.
-                // Você pode precisar usar createFromAsset ou createFromInputStream dependendo de como os DBs são empacotados.
-                // createFromAsset assume que o arquivo no path databasePathInAssets é a fonte.
-                // createFromAsset PRECISA do caminho RELATIVO dentro de 'assets'.
-                 .createFromAsset(databasePathInAssets)
-                 .build()
-             }
+            val db = withContext(Dispatchers.IO) {
+                Room.databaseBuilder(
+                    getApplication<Application>().applicationContext,
+                    BibleDatabase::class.java,
+                    dbFileName
+                )
+                .createFromAsset(databasePathInAssets)
+                .build()
+            }
             currentDatabase = db
             bibleDao = db.bibleDao()
-            Log.d("BibliaVM", "Banco de dados para '$sqliteFileName' carregado com sucesso.")
-
-            // Ao carregar o DB, devemos carregar os nomes dos livros SOMENTE DEPOIS que o DB estiver pronto.
-            // A função carregarNomesDosLivrosDaTraducaoAtual já tem a verificação bibleDao?.let { ... }
-            // então podemos chamá-la após bibleDao ser atribuído.
-             carregarNomesDosLivrosDaTraducaoAtual()
-
-        } catch (e: IOException) {
-            Log.e("BibliaVM", "Erro IO ao carregar DB $sqliteFileName: ${e.message}")
-            // Lidar com erro: talvez definir um estado de erro na UI
+            Log.d("BibliaVM", "Banco de dados '$dbFileName' carregado com sucesso.")
+            carregarNomesDosLivrosDaTraducaoAtual()
         } catch (e: Exception) {
-            Log.e("BibliaVM", "Erro ao carregar DB $sqliteFileName: ${e.message}")
-            // Lidar com erro
+            Log.e("BibliaVM", "Erro ao carregar DB $dbFileName: ${e.message}")
         }
     }
 
+    /**
+     * Carrega os nomes dos livros da tradução atual.
+     */
     private fun carregarNomesDosLivrosDaTraducaoAtual() {
-        // Esta função agora depende de bibleDao não ser nulo
         bibleDao?.let { dao ->
             viewModelScope.launch {
-                _nomesLivrosDisponiveis.value = emptyList() // Mostrar que está carregando
-                Log.d("BibliaVM", "Carregando nomes dos livros do DB...")
+                _nomesLivrosDisponiveis.value = emptyList()
                 try {
                     dao.getAllBooks().collect { bookEntities ->
                         val nomes = bookEntities.map { it.name }
                         _nomesLivrosDisponiveis.value = nomes
-                         if (nomes.isNotEmpty()) {
+                        if (nomes.isNotEmpty()) {
                             Log.d("BibliaVM", "Nomes dos livros carregados do DB: ${nomes.size} livros.")
                         } else {
                             Log.w("BibliaVM", "Nenhum nome de livro carregado do DB.")
                         }
                     }
                 } catch (e: Exception) {
-                     Log.e("BibliaVM", "Erro ao carregar nomes dos livros do DB: ${e.message}")
-                     _nomesLivrosDisponiveis.value = emptyList()
-                     // Lidar com erro
+                    Log.e("BibliaVM", "Erro ao carregar nomes dos livros do DB: ${e.message}")
+                    _nomesLivrosDisponiveis.value = emptyList()
                 }
             }
         } ?: run {
-             Log.w("BibliaVM", "bibleDao é nulo ao tentar carregar nomes de livros.")
-             _nomesLivrosDisponiveis.value = emptyList()
+            Log.w("BibliaVM", "bibleDao é nulo ao tentar carregar nomes de livros.")
+            _nomesLivrosDisponiveis.value = emptyList()
         }
     }
 
+    /**
+     * Carrega um livro específico do banco de dados.
+     */
     private suspend fun carregarLivroEspecifico() {
         val nomeLivro = _nomeLivroParaCarregar.value ?: return
 
         bibleDao?.let { dao ->
-            _livroCarregado.value = null // Indicar que está carregando
+            _livroCarregado.value = null
             Log.d("BibliaVM", "Carregando livro '$nomeLivro' do DB...")
 
             try {
                 val bookEntity = dao.getBookByName(nomeLivro)
 
                 if (bookEntity != null) {
-                    // Buscar TODOS os versículos para este livro usando o novo método
                     dao.getVersesForBook(bookEntity.bookId).collect { versesForBook ->
-                        // Agrupar versículos por número de capítulo
                         val versiculosAgrupadosPorCapitulo = versesForBook.groupBy { it.chapter }
-
-                        // Mapear para lista de objetos Capitulo
                         val capitulos = versiculosAgrupadosPorCapitulo.map { (capNum, verseEntities) ->
                             Capitulo(
                                 numero = capNum,
-                                // Mapear VerseEntity para Versiculo simples (numero, texto)
                                 versiculos = verseEntities.map { verseEntity ->
-                                    com.example.apparvoredavida.model.Versiculo(
+                                    Versiculo(
                                         numero = verseEntity.verseNumber,
                                         texto = verseEntity.text
                                     )
@@ -234,79 +201,71 @@ class BibliaViewModel @Inject constructor(
                             )
                         }.sortedBy { it.numero }
 
-                        // Criar o objeto Livro para o estado da UI
                         val livroCarregadoUI = Livro(
                             nome = bookEntity.name,
-                            abreviacao = getBookAbbrev(bookEntity.bookReferenceId) ?: "", // Obter abreviação do mapa
+                            abreviacao = getBookAbbrev(bookEntity.bookReferenceId) ?: "",
                             capitulos = capitulos
                         )
 
                         _livroCarregado.value = livroCarregadoUI
-
                         Log.d("BibliaVM", "Livro '$nomeLivro' carregado do DB com ${capitulos.size} capítulos.")
                     }
                 } else {
                     Log.w("BibliaVM", "Livro '$nomeLivro' NÃO encontrado no DB.")
                     _livroCarregado.value = null
                 }
-
             } catch (e: Exception) {
                 Log.e("BibliaVM", "Erro ao carregar livro '$nomeLivro' do DB: ${e.message}")
                 _livroCarregado.value = null
-                // Lidar com erro
             }
-
         } ?: run {
             Log.w("BibliaVM", "bibleDao é nulo ao tentar carregar livro.")
             _livroCarregado.value = null
         }
     }
 
-    // Função auxiliar para obter a abreviação do livro pelo book_reference_id
+    /**
+     * Obtém a abreviação de um livro pelo seu ID de referência.
+     * @param bookReferenceId ID de referência do livro
+     * @return Abreviação do livro ou null se não encontrado
+     */
     private fun getBookAbbrev(bookReferenceId: Int): String? {
         return bookAbbrevToRefId.entries.find { it.value == bookReferenceId }?.key
     }
 
-    // Implementar getVerseById usando o Room Database
+    /**
+     * Busca um versículo específico pelo seu ID.
+     * @param verseId ID do versículo no formato TRADUCAO_ABREV_LIVRO_CAPITULO_VERSICULO
+     * @return Detalhes do versículo ou null se não encontrado
+     */
     suspend fun getVerseById(verseId: String): VersiculoDetails? {
         Log.d("BibliaVM", "Buscando versículo com ID: $verseId")
         val parts = verseId.split("_")
-        if (parts.size != 5) { // Ajustado para esperar 5 partes
+        if (parts.size != 5) {
             Log.e("BibliaVM", "Formato de verseId inválido. Esperado TRADUCAO_ABREV_LIVRO_CAPITULO_VERSICULO: $verseId")
             return null
         }
 
-        val (tradAbbrev, bookAbbrev, capStr, verStr, verseIdInTrad) = parts // Adicionado verseIdInTrad para consistência, embora não usado na busca Room
+        val (tradAbbrev, bookAbbrev, capStr, verStr, verseIdInTrad) = parts
 
-        // 1. Obter jsonPath da tradução
-        val jsonPath = traducaoAbbrevToJsonPath[tradAbbrev]
-        if (jsonPath == null) {
+        val dbPath = traducaoAbbrevToDbPath[tradAbbrev]
+        if (dbPath == null) {
             Log.e("BibliaVM", "Abreviação de tradução inválida no verseId: $tradAbbrev")
             return null
         }
 
-        // 2. Garantir que o banco de dados correto esteja carregado
-        // Se a tradução selecionada atualmente não for a do verseId, carregar o DB correto.
-        // Nota: carregarBancoDeDadosParaTraducao é suspend, então precisamos estar em um contexto suspend.
-        if (_traducaoSelecionada.value.jsonPath != jsonPath) {
+        if (_traducaoSelecionada.value.dbPath != dbPath) {
             Log.d("BibliaVM", "Trocando para o banco de dados da tradução: $tradAbbrev")
-            carregarBancoDeDadosParaTraducao(jsonPath)
-            // Aguardar um pouco para garantir que o DB foi carregado? Ou usar um mecanismo mais robusto?
-            // Para simplificar agora, vamos prosseguir, assumindo que a carga é rápida ou síncrona o suficiente aqui.
-            // Em um cenário real, talvez fosse melhor retornar null e forçar a UI a esperar.
-            // Ou, idealmente, carregarBancoDeDadosParaTraducao poderia emitir um estado indicando quando está pronto.
-            // Por enquanto, vamos apenas adicionar um log e prosseguir.
+            carregarBancoDeDadosParaTraducao(dbPath)
             Log.d("BibliaVM", "Tentando prosseguir após carregar DB. Verificar se bibleDao está pronto.")
         }
 
-        // 3. Obter o book_reference_id pela abreviação do livro
         val bookReferenceId = bookAbbrevToRefId[bookAbbrev]
         if (bookReferenceId == null) {
             Log.e("BibliaVM", "Abreviação de livro inválida no verseId: $bookAbbrev")
             return null
         }
 
-        // 4. Parsear capítulo e versículo
         val capNum = capStr.toIntOrNull()
         val verNum = verStr.toIntOrNull()
         if (capNum == null || verNum == null) {
@@ -314,28 +273,24 @@ class BibliaViewModel @Inject constructor(
             return null
         }
 
-        // 5. Usar o DAO para buscar o versículo
-        // Precisamos garantir que bibleDao não seja nulo APÓS a potencial carga do DB
         return bibleDao?.let { dao ->
             try {
-                // Buscar o BookEntity para obter o nome completo do livro
-                // Nota: getBookByReferenceId é mais robusto pois usa um ID padrão
                 val bookEntity = dao.getBookByReferenceId(bookReferenceId)
 
                 if (bookEntity != null) {
                     val verseEntity = dao.getSpecificVerse(bookEntity.bookId, capNum, verNum)
 
                     if (verseEntity != null) {
-                        Log.d("BibliaVM", "Versículo encontrado: ${bookEntity.name} ${verseEntity.chapter}:${verseEntity.verseNumber}") // Log mais detalhado
+                        Log.d("BibliaVM", "Versículo encontrado: ${bookEntity.name} ${verseEntity.chapter}:${verseEntity.verseNumber}")
                         VersiculoDetails(
-                            livroNome = bookEntity.name, // Usar nome do livro do BookEntity
+                            livroNome = bookEntity.name,
                             capituloNumero = verseEntity.chapter,
                             versiculoNumero = verseEntity.verseNumber,
                             texto = verseEntity.text,
-                            id = verseId // Manter o ID original passado
+                            id = verseId
                         )
                     } else {
-                        Log.w("BibliaVM", "Versículo não encontrado para ID: $verseId (Book ID: ${bookEntity.bookId}, Cap: $capNum, Ver: $verNum)") // Log mais detalhado
+                        Log.w("BibliaVM", "Versículo não encontrado para ID: $verseId (Book ID: ${bookEntity.bookId}, Cap: $capNum, Ver: $verNum)")
                         null
                     }
                 } else {
@@ -344,7 +299,7 @@ class BibliaViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e("BibliaVM", "Erro ao buscar versículo com ID $verseId do DB: ${e.message}")
-                e.printStackTrace() // Adicionar printStackTrace para melhor depuração
+                e.printStackTrace()
                 null
             }
         } ?: run {
@@ -352,12 +307,6 @@ class BibliaViewModel @Inject constructor(
             null
         }
     }
-
-    // TODO: Adicionar função para fechar o banco de dados quando o ViewModel não for mais necessário (onCleared)
-
-     // Remover funções de leitura de JSON que não serão mais usadas
-    // private suspend fun lerJsonDeAssets(context: Context, path: String): String {...}
-    // private suspend fun <T> comContextoIO(bloco: suspend () -> T): T {...}
 
     override fun onCleared() {
         currentDatabase?.close()

@@ -9,13 +9,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.apparvoredavida.model.Album
 import com.example.apparvoredavida.model.Music
-import com.example.apparvoredavida.model.Favorite
 import com.example.apparvoredavida.ui.components.AppTopBar
 import com.example.apparvoredavida.viewmodel.MusicaViewModel
 import com.example.apparvoredavida.viewmodel.FavoritesViewModel
@@ -30,9 +27,7 @@ fun AlbumScreen(
     musicaViewModel: MusicaViewModel = hiltViewModel(),
     favoritosViewModel: FavoritesViewModel = hiltViewModel()
 ) {
-    
     val albumComMusicasState by musicaViewModel.getAlbumById(albumId).collectAsStateWithLifecycle()
-
     val isLoading = albumComMusicasState == null && albumId.isNotEmpty()
     val albumData = albumComMusicasState?.first
     val musicList = albumComMusicasState?.second ?: emptyList()
@@ -43,36 +38,68 @@ fun AlbumScreen(
             onBackClick = { navController.navigateUp() }
         )
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else if (albumData == null) {
-             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Álbum não encontrado.", style = MaterialTheme.typography.bodyLarge)
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(musicList) { musica ->
-                    val isFavorite by favoritosViewModel.isMusicFavoriteFlow(musica.id).collectAsState(initial = false)
-                    MusicItem(
-                        musica = musica,
-                        isFavorite = isFavorite,
-                        onPlayClick = {
-                            musicaViewModel.selecionarMusica(musica)
-                            navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
-                        },
-                        onFavoriteClick = { selectedMusic ->
-                            favoritosViewModel.toggleFavoriteMusic(selectedMusic)
-                        }
-                    )
-                }
-            }
+        when {
+            isLoading -> LoadingContent()
+            albumData == null -> ErrorContent()
+            else -> MusicListContent(
+                musicList = musicList,
+                favoritosViewModel = favoritosViewModel,
+                musicaViewModel = musicaViewModel,
+                navController = navController
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorContent() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            "Álbum não encontrado.",
+            style = MaterialTheme.typography.bodyLarge
+        )
+    }
+}
+
+@Composable
+private fun MusicListContent(
+    musicList: List<Music>,
+    favoritosViewModel: FavoritesViewModel,
+    musicaViewModel: MusicaViewModel,
+    navController: NavController
+) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(musicList) { musica ->
+            val isFavorite by favoritosViewModel.isMusicFavoriteFlow(musica.id)
+                .collectAsState(initial = false)
+            
+            MusicItem(
+                musica = musica,
+                isFavorite = isFavorite,
+                onPlayClick = {
+                    musicaViewModel.selecionarMusica(musica)
+                    navController.navigate("${Constants.ROUTE_PLAYER}/${musica.id}")
+                },
+                onFavoriteClick = { favoritosViewModel.toggleFavoriteMusic(it) }
+            )
         }
     }
 }
