@@ -16,7 +16,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import com.example.apparvoredavida.viewmodel.PreferenciasViewModel
 import com.example.apparvoredavida.model.TemaApp
-import com.example.apparvoredavida.util.TamanhoFonte
+import com.example.apparvoredavida.model.TamanhoFonte
 import com.example.apparvoredavida.ui.components.AppTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)

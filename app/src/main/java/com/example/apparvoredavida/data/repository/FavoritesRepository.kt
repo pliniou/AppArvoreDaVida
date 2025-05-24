@@ -1,13 +1,12 @@
 package com.example.apparvoredavida.data.repository
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 interface FavoritesRepository {
-    val favoriteMusicIdsFlow: StateFlow<Set<String>>
-    val favoriteVerseIdsFlow: StateFlow<Set<String>>
-    val favoriteHymnIdsFlow: StateFlow<Set<String>>
-    val favoriteScoreIdsFlow: StateFlow<Set<String>>
+    val favoriteMusicIdsFlow: Flow<Set<String>>
+    val favoriteVerseIdsFlow: Flow<Set<String>>
+    val favoriteHymnIdsFlow: Flow<Set<String>>
+    val favoriteScoreIdsFlow: Flow<Set<String>>
 
     suspend fun addFavoriteMusic(musicId: String)
     suspend fun removeFavoriteMusic(musicId: String)

@@ -3,6 +3,8 @@ package com.example.apparvoredavida.di
 import android.content.Context
 import com.example.apparvoredavida.data.repository.MusicRepository
 import com.example.apparvoredavida.data.repository.impl.MusicRepositoryImpl
+import com.example.apparvoredavida.util.AssetManager
+import com.example.apparvoredavida.util.ErrorHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,8 +22,10 @@ object MusicModule {
     @Provides
     @Singleton
     fun provideMusicRepository(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        assetManager: AssetManager,
+        errorHandler: ErrorHandler
     ): MusicRepository {
-        return MusicRepositoryImpl(context)
+        return MusicRepositoryImpl(context, assetManager, errorHandler)
     }
 } 

@@ -2,9 +2,10 @@ package com.example.apparvoredavida.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.apparvoredavida.data.FavoritesRepository
+import com.example.apparvoredavida.data.repository.FavoritesRepository
 import com.example.apparvoredavida.model.FavoriteDisplayItem
 import com.example.apparvoredavida.model.Music
+import com.example.apparvoredavida.model.VerseDetails
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -14,20 +15,19 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Importando as interfaces dos novos repositórios
-import com.example.apparvoredavida.data.MusicRepository
-import com.example.apparvoredavida.data.BibleRepository
-import com.example.apparvoredavida.data.HymnRepository
-import com.example.apparvoredavida.data.PartituraRepository
+// Importando as interfaces dos repositórios
+import com.example.apparvoredavida.data.repository.MusicRepository
+import com.example.apparvoredavida.data.repository.BibleRepository
+import com.example.apparvoredavida.data.repository.HymnRepository
+import com.example.apparvoredavida.data.repository.PartituraRepository
 
 @HiltViewModel
 class FavoritesViewModel @Inject constructor(
     private val favoritesRepository: FavoritesRepository,
-    // Injetando repositórios em vez de ViewModels
     private val musicRepository: MusicRepository,
     private val bibleRepository: BibleRepository,
     private val hymnRepository: HymnRepository,
-    private val partituraRepository: PartituraRepository // Usando o novo nome PartituraRepository
+    private val partituraRepository: PartituraRepository
 ) : ViewModel() {
 
     val favoriteMusicIds: StateFlow<Set<String>> = favoritesRepository.favoriteMusicIdsFlow
@@ -61,7 +61,6 @@ class FavoritesViewModel @Inject constructor(
         // Fetch Verse Details usando BibleRepository
         val verseItems = verseIds.mapNotNull { verseId ->
              bibleRepository.getVerseById(verseId)?.let { verseDetails ->
-                 // Assuming VersiculoDetails has the info needed for title and reference
                  FavoriteDisplayItem.VerseItem(verseId, "${verseDetails.livroNome} ${verseDetails.capituloNumero}:${verseDetails.versiculoNumero}", "${verseDetails.livroNome} ${verseDetails.capituloNumero}:${verseDetails.versiculoNumero}", verseDetails)
             }
         }
@@ -69,21 +68,20 @@ class FavoritesViewModel @Inject constructor(
 
         // Fetch Hymn Details usando HymnRepository
         val hymnItems = hymnIds.mapNotNull { hymnId ->
-            hymnRepository.getHymnById(hymnId)?.let { hino -> // Usar getHymnById e modelo Hino
-                FavoriteDisplayItem.HymnItem(hymnId, hino.titulo, hino) // Usar campos do modelo Hino
+            hymnRepository.getHymnById(hymnId)?.let { hino ->
+                FavoriteDisplayItem.HymnItem(hymnId, hino.titulo, hino)
             }
         }
         items.addAll(hymnItems)
 
         // Fetch Score Details usando PartituraRepository
         val scoreItems = scoreIds.mapNotNull { scoreId ->
-            partituraRepository.getScoreById(scoreId)?.let { partitura -> // Usar getScoreById e modelo Partitura
-                FavoriteDisplayItem.ScoreItem(scoreId, partitura.titulo, partitura) // Usar campos do modelo Partitura
+            partituraRepository.getPartituraById(scoreId)?.let { partitura ->
+                FavoriteDisplayItem.ScoreItem(scoreId, partitura.title, partitura)
             }
         }
         items.addAll(scoreItems)
 
-        // Sort items? Maybe by type or title? For now, just return the list.
         items.toList()
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -115,7 +113,6 @@ class FavoritesViewModel @Inject constructor(
         return favoritesRepository.isVerseFavoriteFlow(verseId)
     }
 
-    // --- Hino ---
     fun toggleFavoriteHymn(hymnId: String) {
         viewModelScope.launch {
             if (favoriteHymnIds.value.contains(hymnId)) {
@@ -130,7 +127,6 @@ class FavoritesViewModel @Inject constructor(
         return favoritesRepository.isHymnFavoriteFlow(hymnId)
     }
 
-    // --- Partitura ---
     fun toggleFavoriteScore(scoreId: String) {
         viewModelScope.launch {
             if (favoriteScoreIds.value.contains(scoreId)) {

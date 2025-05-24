@@ -18,7 +18,7 @@ import com.example.apparvoredavida.data.repository.FavoritesRepository
  */
 @HiltViewModel
 class PartiturasViewModel @Inject constructor(
-    private val partiturasRepository: PartituraRepository,
+    private val partituraRepository: PartituraRepository,
     private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
     
@@ -40,7 +40,7 @@ class PartiturasViewModel @Inject constructor(
      */
     private suspend fun loadPartituras() {
         try {
-            _partituras.value = partiturasRepository.getAllPartituras()
+            _partituras.value = partituraRepository.getPartituras()
         } catch (e: Exception) {
             // TODO: Implementar tratamento de erro adequado
         }
@@ -51,7 +51,9 @@ class PartiturasViewModel @Inject constructor(
      */
     private suspend fun loadFavorites() {
         try {
-            _favorites.value = favoritesRepository.getFavoritePartituras()
+            favoritesRepository.favoriteScoreIdsFlow.collect { favoriteIds ->
+                _favorites.value = favoriteIds
+            }
         } catch (e: Exception) {
             // TODO: Implementar tratamento de erro adequado
         }
@@ -65,11 +67,10 @@ class PartiturasViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 if (_favorites.value.contains(partituraId)) {
-                    favoritesRepository.removeFavoritePartitura(partituraId)
+                    favoritesRepository.removeFavoriteScore(partituraId)
                 } else {
-                    favoritesRepository.addFavoritePartitura(partituraId)
+                    favoritesRepository.addFavoriteScore(partituraId)
                 }
-                loadFavorites()
             } catch (e: Exception) {
                 // TODO: Implementar tratamento de erro adequado
             }

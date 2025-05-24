@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 /**
  * Implementação do repositório da Bíblia.
- * Gerencia o acesso aos dados da Bíblia usando o DAO e assets.
+ * Gerencia o acesso aos dados da Bíblia usando o DAO.
  */
 @Singleton
 class BibleRepositoryImpl @Inject constructor(
@@ -29,10 +29,8 @@ class BibleRepositoryImpl @Inject constructor(
         return emptyList()
     }
 
-    override suspend fun getBooks(): List<Livro> {
-        return _currentTranslation.value?.let { translation ->
-            bibleDao.getBooks(translation.dbPath)
-        } ?: emptyList()
+    override suspend fun getBooksByTranslation(translationId: String): List<Livro> {
+        return bibleDao.getBooks(translationId)
     }
 
     override suspend fun getVerseDetails(
@@ -53,4 +51,8 @@ class BibleRepositoryImpl @Inject constructor(
     }
 
     override fun observeCurrentTranslation(): Flow<BibleTranslation?> = _currentTranslation
+
+    override suspend fun updateCurrentTranslation(translation: BibleTranslation) {
+        _currentTranslation.value = translation
+    }
 } 

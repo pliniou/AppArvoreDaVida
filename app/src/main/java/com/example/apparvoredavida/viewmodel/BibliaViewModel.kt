@@ -15,6 +15,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import com.example.apparvoredavida.data.bible.*
 import androidx.room.Room
+import com.example.apparvoredavida.data.repository.BibleRepository
 
 /**
  * ViewModel responsável por gerenciar a funcionalidade da Bíblia.
@@ -23,7 +24,8 @@ import androidx.room.Room
 @HiltViewModel
 class BibliaViewModel @Inject constructor(
     application: Application,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val bibleRepository: BibleRepository
 ) : AndroidViewModel(application) {
 
     private var currentDatabase: BibleDatabase? = null
@@ -71,10 +73,20 @@ class BibliaViewModel @Inject constructor(
 
     private val _nomeLivroParaCarregar = MutableStateFlow<String?>(null)
 
+    private val _biblia = MutableStateFlow<Biblia?>(null)
+    val biblia: StateFlow<Biblia?> = _biblia.asStateFlow()
+
+    private val _versaoAtual = MutableStateFlow<String>("")
+    val versaoAtual: StateFlow<String> = _versaoAtual.asStateFlow()
+
+    private val _versiculos = MutableStateFlow<List<VerseDetails>>(emptyList())
+    val versiculos: StateFlow<List<VerseDetails>> = _versiculos.asStateFlow()
+
     init {
         viewModelScope.launch {
             carregarBancoDeDadosParaVersao(_versaoSelecionada.value.dbPath)
         }
+        loadBiblia()
     }
 
     /**
@@ -238,73 +250,34 @@ class BibliaViewModel @Inject constructor(
      * @param verseId ID do versículo no formato VERSAO_ABREV_LIVRO_CAPITULO_VERSICULO
      * @return Detalhes do versículo ou null se não encontrado
      */
-    suspend fun getVerseById(verseId: String): VersiculoDetails? {
-        Log.d("BibliaVM", "Buscando versículo com ID: $verseId")
-        val parts = verseId.split("_")
-        if (parts.size != 5) {
-            Log.e("BibliaVM", "Formato de verseId inválido. Esperado VERSAO_ABREV_LIVRO_CAPITULO_VERSICULO: $verseId")
-            return null
-        }
+    suspend fun getVerseById(verseId: String): VerseDetails? {
+        return bibleRepository.getVerseById(verseId)
+    }
 
-        val (versaoAbbrev, bookAbbrev, capStr, verStr, verseIdInVersao) = parts
+    fun getVersiculosByCapitulo(livroId: String, capituloNumero: Int): List<VerseDetails> {
+        return bibleRepository.getVersiculosByCapitulo(livroId, capituloNumero)
+    }
 
-        val dbPath = versaoAbbrevToDbPath[versaoAbbrev]
-        if (dbPath == null) {
-            Log.e("BibliaVM", "Abreviação de versão inválida no verseId: $versaoAbbrev")
-            return null
-        }
+    fun getVersiculosByLivro(livroId: String): List<VerseDetails> {
+        return bibleRepository.getVersiculosByLivro(livroId)
+    }
 
-        if (_versaoSelecionada.value.dbPath != dbPath) {
-            Log.d("BibliaVM", "Trocando para o banco de dados da versão: $versaoAbbrev")
-            carregarBancoDeDadosParaVersao(dbPath)
-            Log.d("BibliaVM", "Tentando prosseguir após carregar DB. Verificar se bibleDao está pronto.")
-        }
+    fun getVersiculosByRange(livroId: String, capituloInicio: Int, capituloFim: Int): List<VerseDetails> {
+        return bibleRepository.getVersiculosByRange(livroId, capituloInicio, capituloFim)
+    }
 
-        val bookReferenceId = bookAbbrevToRefId[bookAbbrev]
-        if (bookReferenceId == null) {
-            Log.e("BibliaVM", "Abreviação de livro inválida no verseId: $bookAbbrev")
-            return null
-        }
+    fun getVersiculosBySearch(query: String): List<VerseDetails> {
+        return bibleRepository.getVersiculosBySearch(query)
+    }
 
-        val capNum = capStr.toIntOrNull()
-        val verNum = verStr.toIntOrNull()
-        if (capNum == null || verNum == null) {
-            Log.e("BibliaVM", "Número de capítulo ou versículo inválido no verseId: $capStr, $verStr")
-            return null
-        }
-
-        return bibleDao?.let { dao ->
+    private fun loadBiblia() {
+        viewModelScope.launch {
             try {
-                val bookEntity = dao.getBookByReferenceId(bookReferenceId)
-
-                if (bookEntity != null) {
-                    val verseEntity = dao.getSpecificVerse(bookEntity.bookId, capNum, verNum)
-
-                    if (verseEntity != null) {
-                        Log.d("BibliaVM", "Versículo encontrado: ${bookEntity.name} ${verseEntity.chapter}:${verseEntity.verseNumber}")
-                        VersiculoDetails(
-                            livroNome = bookEntity.name,
-                            capituloNumero = verseEntity.chapter,
-                            versiculoNumero = verseEntity.verseNumber,
-                            texto = verseEntity.text,
-                            id = verseId
-                        )
-                    } else {
-                        Log.w("BibliaVM", "Versículo não encontrado para ID: $verseId (Book ID: ${bookEntity.bookId}, Cap: $capNum, Ver: $verNum)")
-                        null
-                    }
-                } else {
-                    Log.w("BibliaVM", "Livro não encontrado para reference ID: $bookReferenceId (do verseId $verseId)")
-                    null
-                }
+                _biblia.value = bibleRepository.getBiblia()
+                _versaoAtual.value = bibleRepository.getVersaoAtual()
             } catch (e: Exception) {
-                Log.e("BibliaVM", "Erro ao buscar versículo com ID $verseId do DB: ${e.message}")
-                e.printStackTrace()
-                null
+                // TODO: Implementar tratamento de erro adequado
             }
-        } ?: run {
-            Log.e("BibliaVM", "bibleDao é nulo ao tentar buscar versículo por ID.")
-            null
         }
     }
 

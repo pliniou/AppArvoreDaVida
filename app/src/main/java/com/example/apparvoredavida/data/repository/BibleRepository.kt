@@ -15,9 +15,10 @@ interface BibleRepository {
     suspend fun getTranslations(): List<BibleTranslation>
 
     /**
-     * Obtém a lista de livros da tradução atual.
+     * Obtém a lista de livros para uma tradução específica.
+     * @param translationId ID da tradução
      */
-    suspend fun getBooks(): List<Livro>
+    suspend fun getBooksByTranslation(translationId: String): List<Livro>
 
     /**
      * Obtém os detalhes de um versículo específico.
@@ -49,4 +50,10 @@ interface BibleRepository {
      * Observa a tradução atual selecionada.
      */
     fun observeCurrentTranslation(): Flow<BibleTranslation?>
+
+    /**
+     * Atualiza a tradução atual.
+     * @param translation Nova tradução selecionada
+     */
+    suspend fun updateCurrentTranslation(translation: BibleTranslation)
 } 

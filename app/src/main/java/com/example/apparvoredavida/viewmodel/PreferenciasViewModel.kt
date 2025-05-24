@@ -11,7 +11,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import com.example.apparvoredavida.data.PreferenciasDataClass
 import com.example.apparvoredavida.model.TemaApp
-import com.example.apparvoredavida.util.TamanhoFonte
+import com.example.apparvoredavida.model.TamanhoFonte
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import androidx.lifecycle.viewModelScope

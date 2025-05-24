@@ -4,6 +4,8 @@ import android.content.Context
 import com.example.apparvoredavida.data.datastore.PdfPreferences
 import com.example.apparvoredavida.data.repository.PdfRepository
 import com.example.apparvoredavida.data.repository.impl.PdfRepositoryImpl
+import com.example.apparvoredavida.util.AssetManager
+import com.example.apparvoredavida.util.ErrorHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,8 +29,10 @@ object PdfModule {
     @Singleton
     fun providePdfRepository(
         @ApplicationContext context: Context,
-        pdfPreferences: PdfPreferences
+        pdfPreferences: PdfPreferences,
+        assetManager: AssetManager,
+        errorHandler: ErrorHandler
     ): PdfRepository {
-        return PdfRepositoryImpl(context, pdfPreferences)
+        return PdfRepositoryImpl(context, pdfPreferences, assetManager, errorHandler)
     }
 } 

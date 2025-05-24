@@ -270,7 +270,22 @@ class MusicaViewModel @Inject constructor(
     }
 
     fun getMusicById(musicId: String): Music? {
-        // Flatten the map of album to list of music and find the music by ID
-        return _albumMusicsMap.value.values.flatten().find { it.id == musicId }
+        return musicRepository.getMusicById(musicId)
+    }
+
+    fun getAllMusics(): List<Music> {
+        return musicRepository.getAllMusics()
+    }
+
+    fun getMusicsByAlbum(albumId: String): List<Music> {
+        return musicRepository.getMusicsByAlbum(albumId)
+    }
+
+    fun getMusicsByArtist(artist: String): List<Music> {
+        return musicRepository.getMusicsByArtist(artist)
+    }
+
+    fun getMusicsBySearch(query: String): List<Music> {
+        return musicRepository.getMusicsBySearch(query)
     }
 } 

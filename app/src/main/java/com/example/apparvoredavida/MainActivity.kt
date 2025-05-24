@@ -39,7 +39,7 @@ fun MainScreen() {
     val preferenciasViewModel: PreferenciasViewModel = hiltViewModel()
     val navController = rememberNavController()
     
-    AppTheme(viewModel = preferenciasViewModel) {
+    AppTheme {
         Scaffold(
             modifier = Modifier.fillMaxSize()
         ) { innerPadding ->
@@ -48,8 +48,7 @@ fun MainScreen() {
                 color = MaterialTheme.colorScheme.background
             ) {
                 AppNavigation(
-                    navController = navController,
-                    modifier = Modifier.padding(innerPadding)
+                    navController = navController
                 )
             }
         }

@@ -1,13 +1,49 @@
 package com.example.apparvoredavida.model
 
+import kotlinx.serialization.Serializable
+
 /**
  * Modelo que representa uma partitura musical.
- * @param id Identificador único da partitura
- * @param title Título da partitura
- * @param pdfPath Caminho do arquivo PDF no assets
  */
+@Serializable
 data class Partitura(
+    /**
+     * Identificador único da partitura.
+     */
     val id: String,
+
+    /**
+     * Título da partitura.
+     */
     val title: String,
-    val pdfPath: String
+
+    /**
+     * Nome do arquivo PDF da partitura.
+     */
+    val fileName: String,
+
+    /**
+     * Compositor da partitura.
+     */
+    val composer: String? = null,
+
+    /**
+     * Ano de composição.
+     */
+    val year: Int? = null,
+
+    /**
+     * Instrumento principal.
+     */
+    val instrument: String? = null,
+
+    /**
+     * Nível de dificuldade (1-5).
+     */
+    val difficulty: Int? = null,
+
+    /**
+     * Descrição ou observações sobre a partitura.
+     */
+    val description: String? = null
 ) 

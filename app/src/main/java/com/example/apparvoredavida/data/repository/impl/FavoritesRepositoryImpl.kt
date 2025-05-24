@@ -6,7 +6,6 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import com.example.apparvoredavida.data.repository.FavoritesRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -21,16 +20,16 @@ class FavoritesRepositoryImpl @Inject constructor(
         val FAVORITE_SCORE_IDS = stringSetPreferencesKey("favorite_score_ids")
     }
 
-    override val favoriteMusicIdsFlow: StateFlow<Set<String>> = dataStore.data
+    override val favoriteMusicIdsFlow: Flow<Set<String>> = dataStore.data
         .map { it[PreferencesKeys.FAVORITE_MUSIC_IDS] ?: emptySet() }
 
-    override val favoriteVerseIdsFlow: StateFlow<Set<String>> = dataStore.data
+    override val favoriteVerseIdsFlow: Flow<Set<String>> = dataStore.data
         .map { it[PreferencesKeys.FAVORITE_VERSE_IDS] ?: emptySet() }
 
-    override val favoriteHymnIdsFlow: StateFlow<Set<String>> = dataStore.data
+    override val favoriteHymnIdsFlow: Flow<Set<String>> = dataStore.data
         .map { it[PreferencesKeys.FAVORITE_HYMN_IDS] ?: emptySet() }
 
-    override val favoriteScoreIdsFlow: StateFlow<Set<String>> = dataStore.data
+    override val favoriteScoreIdsFlow: Flow<Set<String>> = dataStore.data
         .map { it[PreferencesKeys.FAVORITE_SCORE_IDS] ?: emptySet() }
 
     override suspend fun addFavoriteMusic(musicId: String) {

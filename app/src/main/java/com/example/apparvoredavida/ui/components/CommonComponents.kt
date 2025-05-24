@@ -13,13 +13,13 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AppTopBar(
     title: String,
-    onNavigateBack: () -> Unit,
+    onBackClick: () -> Unit,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
     TopAppBar(
         title = { Text(text = title) },
         navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
+            IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Voltar"

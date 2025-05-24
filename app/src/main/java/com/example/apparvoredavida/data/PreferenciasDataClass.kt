@@ -1,7 +1,7 @@
 package com.example.apparvoredavida.data
 
 import com.example.apparvoredavida.model.TemaApp
-import com.example.apparvoredavida.util.TamanhoFonte
+import com.example.apparvoredavida.model.TamanhoFonte
 
 /**
  * Classe de dados que representa as preferências do usuário.
