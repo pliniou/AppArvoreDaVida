@@ -67,14 +67,15 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     
     // Material Components for Android (XML)
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(libs.android.material)
     
     // Compose
     implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation("androidx.compose.material3:material3")
+    implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -93,7 +94,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     
     // PDF Renderer
-    implementation("androidx.pdf:pdf-renderer:2.0.0")
+    implementation(libs.androidx.pdf.renderer)
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
@@ -104,29 +105,27 @@ dependencies {
     testImplementation(libs.mockk)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.6.0")
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // Add Hilt dependencies
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
     
-    // Add Gson dependency
-    implementation("com.google.code.gson:gson:2.10.1")
+    // Gson
+    implementation(libs.gson)
 
-    // Room Database
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
-
-    // Room Testing
-    testImplementation("androidx.room:room-testing:2.6.1")
-    androidTestImplementation("androidx.room:room-testing:2.6.1")
+    // Room
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    testImplementation(libs.room.testing)
+    androidTestImplementation(libs.room.testing)
 
     // Hilt Testing
-    testImplementation("com.google.dagger:hilt-android-testing:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1") // Compiler needs to be specified again for test
-    androidTestImplementation("com.google.dagger:hilt-android-testing:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1") // Compiler needs to be specified again for android test
+    testImplementation(libs.hilt.android.testing)
+    ksp(libs.hilt.compiler) // Compiler needs to be specified again for test
+    androidTestImplementation(libs.hilt.android.testing)
+    ksp(libs.hilt.compiler) // Compiler needs to be specified again for android test
 }
